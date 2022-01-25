@@ -1,0 +1,39 @@
+Dashorder.webapp package
+========================
+
+Subpackages
+-----------
+
+.. toctree::
+
+   Dashorder.webapp.auth
+   Dashorder.webapp.dash
+   Dashorder.webapp.main
+
+Submodules
+----------
+
+Dashorder.webapp.config module
+------------------------------
+
+.. automodule:: Dashorder.webapp.config
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Dashorder.webapp.models module
+------------------------------
+
+.. automodule:: Dashorder.webapp.models
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: Dashorder.webapp
+   :members:
+   :undoc-members:
+   :show-inheritance:

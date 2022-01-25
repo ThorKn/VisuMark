@@ -1,0 +1,30 @@
+Dashorder.webapp.dash package
+=============================
+
+Submodules
+----------
+
+Dashorder.webapp.dash.dashexample module
+----------------------------------------
+
+.. automodule:: Dashorder.webapp.dash.dashexample
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Dashorder.webapp.dash.routes module
+-----------------------------------
+
+.. automodule:: Dashorder.webapp.dash.routes
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: Dashorder.webapp.dash
+   :members:
+   :undoc-members:
+   :show-inheritance:

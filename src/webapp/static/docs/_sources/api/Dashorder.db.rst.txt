@@ -1,0 +1,30 @@
+Dashorder.db package
+====================
+
+Submodules
+----------
+
+Dashorder.db.dbhandler module
+-----------------------------
+
+.. automodule:: Dashorder.db.dbhandler
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Dashorder.db.dbinterface module
+-------------------------------
+
+.. automodule:: Dashorder.db.dbinterface
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: Dashorder.db
+   :members:
+   :undoc-members:
+   :show-inheritance:

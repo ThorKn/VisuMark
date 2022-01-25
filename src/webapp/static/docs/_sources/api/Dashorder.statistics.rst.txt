@@ -1,0 +1,22 @@
+Dashorder.statistics package
+============================
+
+Submodules
+----------
+
+Dashorder.statistics.statistics module
+--------------------------------------
+
+.. automodule:: Dashorder.statistics.statistics
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: Dashorder.statistics
+   :members:
+   :undoc-members:
+   :show-inheritance:

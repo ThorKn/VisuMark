@@ -1,0 +1,30 @@
+Dashorder.webapp.auth package
+=============================
+
+Submodules
+----------
+
+Dashorder.webapp.auth.forms module
+----------------------------------
+
+.. automodule:: Dashorder.webapp.auth.forms
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Dashorder.webapp.auth.routes module
+-----------------------------------
+
+.. automodule:: Dashorder.webapp.auth.routes
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: Dashorder.webapp.auth
+   :members:
+   :undoc-members:
+   :show-inheritance:

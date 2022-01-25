@@ -1,0 +1,494 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Dashorder.billbee.bbhandler &mdash; Dashorder 0.0.post0.dev217+gbd9aeab.dirty documentation</title>
+
+
+
+
+
+
+
+
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+
+
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+
+
+
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+</head>
+
+<body class="wy-body-for-nav">
+
+
+  <div class="wy-grid-for-nav">
+
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+
+
+            <a href="../../../index.html" class="icon icon-home"> Dashorder
+
+
+
+          </a>
+
+
+
+
+              <div class="version">
+                0.0.post0.dev217+gbd9aeab.dirty
+              </div>
+
+
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+
+
+
+
+
+
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authors.html">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/modules.html">Module Reference</a></li>
+</ul>
+
+
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+
+      <nav class="wy-nav-top" aria-label="top navigation">
+
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Dashorder</a>
+
+      </nav>
+
+
+      <div class="wy-nav-content">
+
+        <div class="rst-content">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+
+      <li>Dashorder.billbee.bbhandler</li>
+
+
+      <li class="wy-breadcrumbs-aside">
+
+      </li>
+
+  </ul>
+
+
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <h1>Source code for Dashorder.billbee.bbhandler</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Billbee Handler.</span>
+
+<span class="sd">This handler consists of only one class. All the requests to the Billbee API should be</span>
+<span class="sd">done via this class.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="k">import</span> <span class="n">create_engine</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.orm</span> <span class="k">import</span> <span class="n">Session</span>
+
+<span class="kn">from</span> <span class="nn">Dashorder.webapp.config</span> <span class="k">import</span> <span class="n">Config_Dev</span> <span class="k">as</span> <span class="n">cfg</span>
+<span class="kn">from</span> <span class="nn">Dashorder.webapp.models</span> <span class="k">import</span> <span class="n">User</span>
+
+
+<div class="viewcode-block" id="BbHandler"><a class="viewcode-back" href="../../../api/Dashorder.billbee.html#Dashorder.billbee.bbhandler.BbHandler">[docs]</a><span class="k">class</span> <span class="nc">BbHandler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Billbee Handler Class.</span>
+
+<span class="sd">    Handles the connection, authentication and the requests to the Billbee API.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="BbHandler.__init__"><a class="viewcode-back" href="../../../api/Dashorder.billbee.html#Dashorder.billbee.bbhandler.BbHandler.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">username</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">password</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">apikey</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Constructor.</span>
+
+<span class="sd">        Sets the authentication parameters to connect to the Billbee API.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">username</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">password</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">basic_auth</span> <span class="o">=</span> <span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">apikey</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;X-Billbee-Api-Key&#39;</span><span class="p">:</span> <span class="n">apikey</span><span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">username</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">password</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">apikey</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">apikey</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_billbee_data</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">basic_auth</span> <span class="o">=</span> <span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;X-Billbee-Api-Key&#39;</span><span class="p">:</span> <span class="n">apikey</span><span class="p">}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">page_size</span> <span class="o">=</span> <span class="mi">50</span></div>
+
+<div class="viewcode-block" id="BbHandler.get_customers"><a class="viewcode-back" href="../../../api/Dashorder.billbee.html#Dashorder.billbee.bbhandler.BbHandler.get_customers">[docs]</a>    <span class="k">def</span> <span class="nf">get_customers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;list&#39;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get customers.</span>
+
+<span class="sd">        Asks the Billbee API for a list of customer JSONs and returns it modified.</span>
+<span class="sd">        The modification is the additional ZIP code to the customer JSON.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">page</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;page&#39;</span><span class="p">:</span> <span class="n">page</span><span class="p">,</span> <span class="s1">&#39;pageSize&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">page_size</span><span class="p">}</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">customers</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;https://app.billbee.io/api/v1/customers&#39;</span><span class="p">,</span>
+                                         <span class="n">auth</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">basic_auth</span><span class="p">,</span>
+                                         <span class="n">headers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">headers</span><span class="p">,</span>
+                                         <span class="n">params</span><span class="o">=</span><span class="n">payload</span><span class="p">)</span>
+                <span class="n">customers</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+            <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">HTTPError</span> <span class="k">as</span> <span class="n">errh</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Http Error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">errh</span><span class="p">))</span>
+                <span class="k">return</span> <span class="p">[]</span>
+            <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">ConnectionError</span> <span class="k">as</span> <span class="n">errc</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Connection Error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">errc</span><span class="p">))</span>
+                <span class="k">return</span> <span class="p">[]</span>
+            <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">Timeout</span> <span class="k">as</span> <span class="n">errt</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Timeout Error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">errt</span><span class="p">))</span>
+                <span class="k">return</span> <span class="p">[]</span>
+            <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">RequestException</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Unknown Request Error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">err</span><span class="p">))</span>
+                <span class="k">return</span> <span class="p">[]</span>
+
+            <span class="n">customers_json</span> <span class="o">=</span> <span class="n">customers</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s1">&#39;Data&#39;</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">customer</span> <span class="ow">in</span> <span class="n">customers_json</span><span class="p">:</span>
+                <span class="n">customer_id</span> <span class="o">=</span> <span class="n">customer</span><span class="p">[</span><span class="s1">&#39;Id&#39;</span><span class="p">]</span>
+                <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;page&#39;</span><span class="p">:</span> <span class="s1">&#39;0&#39;</span><span class="p">,</span> <span class="s1">&#39;pageSize&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">page_size</span><span class="p">}</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">customer_address</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;https://app.billbee.io/api/v1/customers/&#39;</span>
+                                                    <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">customer_id</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;/addresses/&#39;</span><span class="p">,</span>
+                                                    <span class="n">auth</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">basic_auth</span><span class="p">,</span>
+                                                    <span class="n">headers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">headers</span><span class="p">,</span>
+                                                    <span class="n">params</span><span class="o">=</span><span class="n">payload</span><span class="p">)</span>
+                    <span class="n">customer_address</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+                <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">HTTPError</span> <span class="k">as</span> <span class="n">errh</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Http Error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">errh</span><span class="p">))</span>
+                    <span class="k">return</span> <span class="p">[]</span>
+                <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">ConnectionError</span> <span class="k">as</span> <span class="n">errc</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Connection Error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">errc</span><span class="p">))</span>
+                    <span class="k">return</span> <span class="p">[]</span>
+                <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">Timeout</span> <span class="k">as</span> <span class="n">errt</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Timeout Error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">errt</span><span class="p">))</span>
+                    <span class="k">return</span> <span class="p">[]</span>
+                <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">RequestException</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Unknown Request Error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">err</span><span class="p">))</span>
+                    <span class="k">return</span> <span class="p">[]</span>
+                <span class="n">customer_address_json</span> <span class="o">=</span> <span class="n">customer_address</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s1">&#39;Data&#39;</span><span class="p">]</span>
+                <span class="n">customer_zip</span> <span class="o">=</span> <span class="n">customer_address_json</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;Zip&#39;</span><span class="p">]</span>
+                <span class="n">customer</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;Zip&#39;</span><span class="p">:</span> <span class="n">customer_zip</span><span class="p">})</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">result</span> <span class="o">+</span> <span class="n">customers_json</span>
+            <span class="k">if</span> <span class="n">page</span> <span class="o">==</span> <span class="n">customers</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s1">&#39;Paging&#39;</span><span class="p">][</span><span class="s1">&#39;TotalPages&#39;</span><span class="p">]:</span>
+                <span class="k">break</span>
+            <span class="n">page</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Got </span><span class="si">{}</span><span class="s1"> customers from Billbee&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="BbHandler.get_articles"><a class="viewcode-back" href="../../../api/Dashorder.billbee.html#Dashorder.billbee.bbhandler.BbHandler.get_articles">[docs]</a>    <span class="k">def</span> <span class="nf">get_articles</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;list&#39;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get articles.</span>
+
+<span class="sd">        Asks the Billbee API for a list of article JSONs and returns it.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">page</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># Loop over all pages</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;page&#39;</span><span class="p">:</span> <span class="n">page</span><span class="p">,</span> <span class="s1">&#39;pageSize&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">page_size</span><span class="p">}</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">articles</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;https://app.billbee.io/api/v1/products&#39;</span><span class="p">,</span>
+                                        <span class="n">auth</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">basic_auth</span><span class="p">,</span>
+                                        <span class="n">headers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">headers</span><span class="p">,</span>
+                                        <span class="n">params</span><span class="o">=</span><span class="n">payload</span><span class="p">)</span>
+                <span class="n">articles</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+            <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">HTTPError</span> <span class="k">as</span> <span class="n">errh</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Http Error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">errh</span><span class="p">))</span>
+                <span class="k">return</span> <span class="p">[]</span>
+            <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">ConnectionError</span> <span class="k">as</span> <span class="n">errc</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Connection Error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">errc</span><span class="p">))</span>
+                <span class="k">return</span> <span class="p">[]</span>
+            <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">Timeout</span> <span class="k">as</span> <span class="n">errt</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Timeout Error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">errt</span><span class="p">))</span>
+                <span class="k">return</span> <span class="p">[]</span>
+            <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">RequestException</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Unknown Request Error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">err</span><span class="p">))</span>
+                <span class="k">return</span> <span class="p">[]</span>
+
+            <span class="n">result</span> <span class="o">=</span> <span class="n">result</span> <span class="o">+</span> <span class="n">articles</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s1">&#39;Data&#39;</span><span class="p">]</span>
+            <span class="c1"># Exit loop if total number of pages is reached</span>
+            <span class="k">if</span> <span class="n">page</span> <span class="o">==</span> <span class="n">articles</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s1">&#39;Paging&#39;</span><span class="p">][</span><span class="s1">&#39;TotalPages&#39;</span><span class="p">]:</span>
+                <span class="k">break</span>
+            <span class="n">page</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Got </span><span class="si">{}</span><span class="s1"> articles from Billbee&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="BbHandler.get_orders"><a class="viewcode-back" href="../../../api/Dashorder.billbee.html#Dashorder.billbee.bbhandler.BbHandler.get_orders">[docs]</a>    <span class="k">def</span> <span class="nf">get_orders</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;list&#39;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get orders.</span>
+
+<span class="sd">        Asks the Billbee API for a list of order JSONs and returns it.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">page</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># Loop over all pages</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;page&#39;</span><span class="p">:</span> <span class="n">page</span><span class="p">,</span> <span class="s1">&#39;pageSize&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">page_size</span><span class="p">}</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">orders</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;https://app.billbee.io/api/v1/orders&#39;</span><span class="p">,</span>
+                                      <span class="n">auth</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">basic_auth</span><span class="p">,</span>
+                                      <span class="n">headers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">headers</span><span class="p">,</span>
+                                      <span class="n">params</span><span class="o">=</span><span class="n">payload</span><span class="p">)</span>
+                <span class="n">orders</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+            <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">HTTPError</span> <span class="k">as</span> <span class="n">errh</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Http Error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">errh</span><span class="p">))</span>
+                <span class="k">return</span> <span class="p">[]</span>
+            <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">ConnectionError</span> <span class="k">as</span> <span class="n">errc</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Connection Error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">errc</span><span class="p">))</span>
+                <span class="k">return</span> <span class="p">[]</span>
+            <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">Timeout</span> <span class="k">as</span> <span class="n">errt</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Timeout Error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">errt</span><span class="p">))</span>
+                <span class="k">return</span> <span class="p">[]</span>
+            <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">RequestException</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Unknown Request Error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">err</span><span class="p">))</span>
+                <span class="k">return</span> <span class="p">[]</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">result</span> <span class="o">+</span> <span class="n">orders</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s1">&#39;Data&#39;</span><span class="p">]</span>
+            <span class="c1"># Exit loop if total number of pages is reached</span>
+            <span class="k">if</span> <span class="n">page</span> <span class="o">==</span> <span class="n">orders</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s1">&#39;Paging&#39;</span><span class="p">][</span><span class="s1">&#39;TotalPages&#39;</span><span class="p">]:</span>
+                <span class="k">break</span>
+            <span class="n">page</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Got </span><span class="si">{}</span><span class="s1"> orders from Billbee&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="BbHandler.test_connection"><a class="viewcode-back" href="../../../api/Dashorder.billbee.html#Dashorder.billbee.bbhandler.BbHandler.test_connection">[docs]</a>    <span class="k">def</span> <span class="nf">test_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;bool&#39;</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">test_conn</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;https://app.billbee.io/api/v1/customers&#39;</span><span class="p">,</span>
+                                     <span class="n">auth</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">basic_auth</span><span class="p">,</span>
+                                     <span class="n">headers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">headers</span><span class="p">)</span>
+            <span class="n">test_conn</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">HTTPError</span> <span class="k">as</span> <span class="n">errh</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Http Error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">errh</span><span class="p">))</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">ConnectionError</span> <span class="k">as</span> <span class="n">errc</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Connection Error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">errc</span><span class="p">))</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">Timeout</span> <span class="k">as</span> <span class="n">errt</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Timeout Error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">errt</span><span class="p">))</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">RequestException</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Unknown Request Error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">err</span><span class="p">))</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="BbHandler.get_billbee_data"><a class="viewcode-back" href="../../../api/Dashorder.billbee.html#Dashorder.billbee.bbhandler.BbHandler.get_billbee_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_billbee_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;str&#39;</span><span class="p">:</span>
+        <span class="n">engine</span> <span class="o">=</span> <span class="n">create_engine</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">SQLALCHEMY_DATABASE_URI</span><span class="p">)</span>
+
+        <span class="c1"># metadata = MetaData(engine)</span>
+        <span class="c1"># users = Table(&#39;user&#39;, metadata, autoload=True)</span>
+        <span class="c1"># mapper(User, users)</span>
+
+        <span class="n">session</span> <span class="o">=</span> <span class="n">Session</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">User</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">User</span><span class="o">.</span><span class="n">username</span> <span class="o">==</span> <span class="s1">&#39;thorsten&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="n">bb_apikey</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">billbee_apikey</span>
+        <span class="n">bb_username</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">billbee_username</span>
+        <span class="n">bb_password</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">billbee_password</span>
+        <span class="n">session</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">bb_username</span><span class="p">,</span> <span class="n">bb_password</span><span class="p">,</span> <span class="n">bb_apikey</span></div>
+
+<div class="viewcode-block" id="BbHandler.get_customer_names"><a class="viewcode-back" href="../../../api/Dashorder.billbee.html#Dashorder.billbee.bbhandler.BbHandler.get_customer_names">[docs]</a>    <span class="k">def</span> <span class="nf">get_customer_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;dict&#39;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get customers.</span>
+
+<span class="sd">        Asks the Billbee API for a list of customer JSONs. Then extracts the</span>
+<span class="sd">        ids and names to return them as a dictionary.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">page</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;page&#39;</span><span class="p">:</span> <span class="n">page</span><span class="p">,</span> <span class="s1">&#39;pageSize&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">page_size</span><span class="p">}</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">customers</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;https://app.billbee.io/api/v1/customers&#39;</span><span class="p">,</span>
+                                         <span class="n">auth</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">basic_auth</span><span class="p">,</span>
+                                         <span class="n">headers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">headers</span><span class="p">,</span>
+                                         <span class="n">params</span><span class="o">=</span><span class="n">payload</span><span class="p">)</span>
+                <span class="n">customers</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+            <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">HTTPError</span> <span class="k">as</span> <span class="n">errh</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Http Error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">errh</span><span class="p">))</span>
+                <span class="k">return</span> <span class="p">{}</span>
+            <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">ConnectionError</span> <span class="k">as</span> <span class="n">errc</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Connection Error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">errc</span><span class="p">))</span>
+                <span class="k">return</span> <span class="p">{}</span>
+            <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">Timeout</span> <span class="k">as</span> <span class="n">errt</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Timeout Error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">errt</span><span class="p">))</span>
+                <span class="k">return</span> <span class="p">{}</span>
+            <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">RequestException</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Unknown Request Error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">err</span><span class="p">))</span>
+                <span class="k">return</span> <span class="p">{}</span>
+
+            <span class="n">customers_json</span> <span class="o">=</span> <span class="n">customers</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s1">&#39;Data&#39;</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">customer</span> <span class="ow">in</span> <span class="n">customers_json</span><span class="p">:</span>
+                <span class="n">customer_id</span> <span class="o">=</span> <span class="n">customer</span><span class="p">[</span><span class="s1">&#39;Id&#39;</span><span class="p">]</span>
+                <span class="n">customer_name</span> <span class="o">=</span> <span class="n">customer</span><span class="p">[</span><span class="s1">&#39;Name&#39;</span><span class="p">]</span>
+                <span class="n">result</span><span class="p">[</span><span class="n">customer_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">customer_name</span>
+            <span class="k">if</span> <span class="n">page</span> <span class="o">==</span> <span class="n">customers</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s1">&#39;Paging&#39;</span><span class="p">][</span><span class="s1">&#39;TotalPages&#39;</span><span class="p">]:</span>
+                <span class="k">break</span>
+            <span class="n">page</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Got </span><span class="si">{}</span><span class="s1"> customers from Billbee&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">result</span></div></div>
+
+
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../../api/Dashorder.billbee.html#Dashorder.billbee.bbhandler.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Entry point.</span>
+
+<span class="sd">    Calls all functions to simple test them.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s1">&#39;BBHandler.log&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">,</span>
+                        <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;[</span><span class="si">%(name)s</span><span class="s1">] </span><span class="si">%(asctime)s</span><span class="s1"> - </span><span class="si">%(levelname)s</span><span class="s1"> - </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;urllib3&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">)</span>
+
+    <span class="n">bb_handler</span> <span class="o">=</span> <span class="n">BbHandler</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;----------&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;CUSTOMERS:&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;----------&quot;</span><span class="p">)</span>
+    <span class="n">customers</span> <span class="o">=</span> <span class="n">bb_handler</span><span class="o">.</span><span class="n">get_customers</span><span class="p">()</span>
+    <span class="c1"># print(json.dumps(customers, indent=4))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">customers</span><span class="p">))</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;----------&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ARTICLES:&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;----------&quot;</span><span class="p">)</span>
+    <span class="n">articles</span> <span class="o">=</span> <span class="n">bb_handler</span><span class="o">.</span><span class="n">get_articles</span><span class="p">()</span>
+    <span class="c1"># print(json.dumps(articles, indent=4))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">articles</span><span class="p">))</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;----------&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ORDERS:&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;----------&quot;</span><span class="p">)</span>
+    <span class="n">orders</span> <span class="o">=</span> <span class="n">bb_handler</span><span class="o">.</span><span class="n">get_orders</span><span class="p">()</span>
+    <span class="c1"># print(json.dumps(orders, indent=4))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">orders</span><span class="p">))</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+
+          </div>
+          <footer>
+
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Harald Heckmann, Thorsten Knoll
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+
+
+
+
+
+</body>
+</html>

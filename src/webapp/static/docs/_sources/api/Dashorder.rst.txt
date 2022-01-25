@@ -1,0 +1,32 @@
+Dashorder package
+=================
+
+Subpackages
+-----------
+
+.. toctree::
+
+   Dashorder.billbee
+   Dashorder.db
+   Dashorder.statistics
+   Dashorder.webapp
+
+Submodules
+----------
+
+Dashorder.server module
+-----------------------
+
+.. automodule:: Dashorder.server
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: Dashorder
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block styles %}
+    {{super()}}
+    <link rel="stylesheet" href="{{url_for('static', filename='mystyle.css')}}">
+{% endblock %}
+
+
+{% block app_content %}
+<div class="fluid-container">
+    <div class="row">
+        <div class="col-sm-6 col-md-6 col-lg-6">
+            <div class="pretty_container">
+                <p>
+                    <img src="/static/logo_small.png" alt="DashOrder Logo"/>
+                    <hr class="new1">
+                    <h3>Willkommen bei DashOrder.</h3>
+                    <hr class="new1">
+                </p
+                <p>Sie verwalten ihre Kunden-Bestellungen und die Warenwirtschaft mit <strong>Billbee?</strong></p>
+                <p>Dann ist DashOrder eine sinnvolle Ergänzung für ihre Unternehmung.</p>
+                <p><strong>DashOder bietet ihnen:</strong></p>
+                <p>
+                    <ul>
+                        <li>Ausführliche grafische Analysen und Auswertungen ihrer Billbee-Daten.<p></p></li>
+                        <li>Automatischen Abgleich mit den Daten ihres Billbee-Accounts.<p></p></li>
+                        <li>Den Vergleich ihrer Shopsysteme, Artikel und Umsätze miteinander.<p></p></li>
+                        <li>Einfache Anpassung der dargestellten Zeiträume.<p></p></li>
+                        <li>Export der Grafiken für Präsentationen und Übersichten.<p></p></li>
+                        <li>Das Prinzip der "Datensparsammkeit" für alle gespeicherten Daten.<p></p></li>
+                        <li>Backup und Wiederherstellung der gespeicherten Daten.<p></p></li>
+                    </ul>
+                </p>
+            </div>
+            <div class="pretty_container">
+                <p>
+                    <img src="/static/logo_small.png" alt="DashOrder Logo"/>
+                    <hr class="new1">
+                    <h3>Datensparsamkeit</h3>
+                    <hr class="new1">
+                </p>
+                <div class="row">
+                    <div class="col-sm-4 col-md-4 col-lg-4">
+                        <img class="img-responsive" src="/static/sparsamkeit.jpg" width="250" alt="Datensparsamkeit"/>
+                    </div>
+                    <div class="col-sm-8 col-md-8 col-lg-8">
+                        <p>Für alle in Dashorder gespeicherten Daten gilt das Prinzip der Datensparsamkeit. So werden zum Beispiel aus den Kundendaten in Billbee nur die eindeutigen Identifikationsnummern, aber keine Namen, Adressen, Emails oder Telefonnummern in DashOrder gespeichert. Sollen diese Daten in DashOrder trotzdem angezeigt werden, sind sie nur kurzzeitig im Speicher und nicht persistent in der Datenbank.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="pretty_container">
+                <p>
+                    <img src="/static/logo_small.png" alt="DashOrder Logo"/>
+                    <hr class="new1">
+                    <h3>Billbee Synchronisierung</h3>
+                    <hr class="new1">
+                </p>
+                <div class="row">
+                    <div class="col-sm-9 col-md-9 col-lg-9">
+                        <p>Ihre Billbee Daten werden in regelmäßigen Intervallen automatisch zur DashOrder Datenbank (MongoDB) synchronisiert. Tragen Sie hierfür ihren Billbee API (Application Programming Interface) Zugang in den DashOrder Einstellungen ein. Es werden keine Änderungen oder neue Eintragungen in Billbee vorgenommen, sondern nur vorhandene Daten abgefragt. Auch hier gilt natürlich das Prinzip der Datensparsamkeit, es werden nur die absolut notwendigen Daten in DashOrder gespeichert.</p>
+                    </div>
+                    <div class="col-sm-3 col-md-3 col-lg-3">
+                        <img class="img-responsive" src="/static/clock.png" width="120" alt="Uhrblatt"/>
+                    </div>
+                </div>
+            </div>
+            <div class="pretty_container">
+                <p>
+                    <img src="/static/logo_small.png" alt="DashOrder Logo"/>
+                    <hr class="new1">
+                    <h3>Für alle Geräte</h3>
+                    <hr class="new1">
+                </p>
+                <p>
+                    DashOrder wurde als Browseranwendung entwickelt und ist daher auf vielen verschiedenen Geräten nutzbar:
+                </p>
+                <p>
+                    <ul>
+                        <li>Personal Computer (PC)<p></p></li>
+                        <li>Tablets<p></p></li>
+                        <li>Laptops<p></p></li>
+                        <li>Smartphones (Optimal im Querformat)<p></p></li>
+                    </ul>
+                </p>
+                <p>
+                    Nach dem Einloggen stehen alle Funktionen von Dashorder im Browser zur Verfügung. Auch das Betriebssystem ihres Geräts ist somit nicht entscheidend.
+                </p>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-6 col-lg-6">
+            <div class="pretty_container">
+                <p>
+                    <img src="/static/logo_small.png" alt="DashOrder Logo"/>
+                    <hr class="new1">
+                    <h3>Analysen und Auswertungen</h3>
+                    <hr class="new1">
+                </p>
+                <p>
+                    <img class="img-responsive" src="/static/auswertung.png" width="850" alt="Auswertung"/>
+                </p>
+            </div>
+            <div class="pretty_container">
+                <p>
+                    <img src="/static/logo_small.png" alt="DashOrder Logo"/>
+                    <hr class="new1">
+                    <h3>MongoDB, die flexible Datenbank</h3>
+                    <hr class="new1">
+                </p>
+                <div class="row">
+                    <div class="col-sm-6 col-md-6 col-lg-6">
+                        <p>Die Datenspeicherung in DashOrder verwendet die NoSQL Datenbank MongoDB. Die Daten sind in MongoDB als Sammlungen von (fast) beliebigen Dokumenten organisiert. Ein Vorteil gegenüber QSL Datenbanken besteht in der hohen Flexibilität für strukturelle Änderungen der Dokumente. Somit lassen sich auch ihre Billbee Datenbestände einfach in DashOrder anpassen. Und dabei wird gleichzeitig das Prinzip der Datensparsamkeit unterstützt.</p>
+                    </div>
+                    <div class="col-sm-6 col-md-6 col-lg-6">
+                        <img class="img-responsive" src="/static/mongodb.png" width="700" alt="MongoDB"/>
+                    </div>
+                </div>
+            </div>
+            <div class="pretty_container">
+                <p>
+                    <img src="/static/logo_small.png" alt="DashOrder Logo"/>
+                    <hr class="new1">
+                    <h3>Cloudservice vs. eigene IT-Infrastrukur</h3>
+                    <hr class="new1">
+                </p>
+                <div class="row">
+                    <div class="col-sm-3 col-md-3 col-lg-3">
+                        <img class="img-responsive" src="/static/cloud.png" width="150" alt="Cloud"/>
+                    </div>
+                    <div class="col-sm-9 col-md-9 col-lg-9">
+                        <p>
+                            DashOrder kann als Cloudservice genutzt werden. Sie benötigen dafür nur einen DashOrder Zugang und können sofort loslegen. Möchten Sie ihre eigene IT-Infrastruktur für DashOrder nutzen, sind die Anforderungen hierfür weitgehend systemunabhängig. Das könnte zum Beispiel eine Einbindung in ein vorhandenes Intranet sein.
+                        </p>
+                        <p>
+                            DashOrder ist ein Python3.6 Projekt mit MongoDB Integration. Im der kleinsten Konfiguration reicht ein Laptop mit Internetzugang für die eigene Nutzung aus.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="pretty_container">
+                <p>
+                    <img src="/static/logo_small.png" alt="DashOrder Logo"/>
+                    <hr class="new1">
+                    <h3>Studentisches Projekt: Noch nicht kommerziell verfügbar!</h3>
+                    <hr class="new1">
+                </p>
+                <p>
+                    DashOrder ist im Jahr 2019 als studentisches Projekt aus dem Studiengang "Master Informatik" an der <a href="https://hs-rm.de">Hochschule RheinMain</a> in Wiesbaden entstanden. In der bisherigen Version ist DashOrder in Kooperation mit der <a href="https://maldanercoffee.com">Maldaner Coffee Roasters GmbH</a> und für deren spezielles Bedarfsbeispiel entwickelt.
+                </p>
+                <div class="col-sm-12 col-md-12 col-lg-12">
+                    <div class="col-sm-2 col-md-2 col-lg-2">
+                        <p></p>
+                    </div>
+                    <div class="col-sm-8 col-md-8 col-lg-8">
+                        <hr class="new1">
+                        <img class="img-responsive" src="/static/mcr_hsrm_logos.png" width="500" alt="Logos"/>
+                        <hr class="new1">
+                    </div>
+                    <div class="col-sm-2 col-md-2 col-lg-2">
+                        <p></p>
+                    </div>
+                </div>
+                <p>
+                <h3><strong>Noch ist DashOrder nicht als kommerzielles Projekt verfügbar!</strong></h3>
+                </p>
+                <p>
+                    Daher ist bisher keine Preis- oder Produktliste für DashOrder verfügbar. Sollten Sie Interesse an der Nutzung von DashOrder für ihr Unternehmen haben, schreiben Sie uns bitte eine Mail (siehe Impressum).
+                </p>
+                <p>
+                    Die Entwickler von DashOrder sind
+                </p>
+                    <ul>
+                        <li>Harald Heckmann <a href="https://github.com/sea212">(Github)</a><p></p></li>
+                        <li>Thorsten Knoll <a href="https://github.com/ThorKn">(Github)</a><p></p></li>
+                    </ul>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

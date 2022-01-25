@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block styles %}
+    {{super()}}
+    <link rel="stylesheet" href="{{url_for('static', filename='mystyle.css')}}">
+{% endblock %}
+
+{% block app_content %}
+    <div class="row fluid-container">
+      <form action="" method="post" novalidate>
+        {{ form[0].hidden_tag() }}
+        <div class="pretty_container col-sm-6 col-md-6 col-lg-6">
+            <p>
+                <img src="/static/logo_small.png" alt="DashOrder Logo"/>
+                <hr class="new1">
+                <h3>Billbee API Einstellungen</h3>
+                <hr class="new1">
+                    <table>
+                        <tr>
+                            <td>
+                                {{ form[0].bb_username.label }}<br><br>
+                            </td>
+                            <td>
+                                {{ form[0].bb_username }}
+                                <!--
+                                {% for error in form[0].bb_username.errors %}
+                                <span style="color: red;">[{{ error }}]</span>
+                                {% endfor %}
+                                -->
+                                <br><br>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                {{ form[0].bb_password.label }}<br><br>
+                            </td>
+                            <td>
+                                {{ form[0].bb_password }}
+                                <!--
+                                {% for error in form[0].bb_password.errors %}
+                                <span style="color: red;">[{{ error }}]</span>
+                                {% endfor %}
+                                -->
+                                <br><br>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                {{ form[0].bb_apikey.label }}<br><br>
+                            </td>
+                            <td>
+                                {{ form[0].bb_apikey }}
+                                <!--
+                                {% for error in form[0].bb_apikey.errors %}
+                                <span style="color: red;">[{{ error }}]</span>
+                                {% endfor %}
+                                -->
+                                <br><br>
+                            </td>
+                        </tr>
+                    </table>
+                    <p align=right>
+                        {{ form[0].bb_submit }}
+                    </p>
+            </p>
+        </div>
+      </form>
+      <form action="" method="post" novalidate>
+        {{ form[1].hidden_tag() }}
+        <div class="pretty_container col-sm-6 col-md-6 col-lg-6">
+            <p>
+                <hr class="new1">
+                <h3>Manuelles Daten-Update von Billbee zu Dashorder jetzt durchführen</h3>
+                <hr class="new1">
+                <p>
+                    DashOrder führt regelmäßig alle 15 Minuten ein Update aus. Dabei werden die
+                    aktuellen Daten von Billbee abgefragt. Hier können Sie dieses Update selbst
+                    ausführen.
+                </p>
+                <h5><font color="red">
+                    ACHTUNG: Das Update kann bis zu 1 Minute dauern.<br>
+                    Solange bitte nichts klicken
+                </font></h5>
+                <p align=right>
+                    {{ form[1].bb_update }}
+                </p>
+            </p>
+        </div>
+      </form>
+      <form action="" method="post" novalidate>
+        {{ form[2].hidden_tag() }}
+        <div class="pretty_container col-sm-6 col-md-6 col-lg-6">
+            <p>
+                <hr class="new1">
+                <h3>Schriftgrößen und Seitenränder im Graph einstellen</h3>
+                <p>Standardeinstellungen: 14, 14, 50, 30, 10, 50</p>
+                <hr class="new1">
+                {{ form[2].dash_fontsize_axis.label }}<br>
+                {% for subfield in form[2].dash_fontsize_axis %}
+                <tr>
+                    <td>{{ subfield }}</td>
+                    <td>{{ subfield.label }}</td>
+                </tr>
+                {% endfor %}<br><br>
+                {{ form[2].dash_fontsize_legend.label }}<br>
+                {% for subfield in form[2].dash_fontsize_legend %}
+                <tr>
+                    <td>{{ subfield }}</td>
+                    <td>{{ subfield.label }}</td>
+                </tr>
+                {% endfor %}<br><br>
+                {{ form[2].dash_margin_left.label }}<br>
+                {% for subfield in form[2].dash_margin_left %}
+                <tr>
+                    <td>{{ subfield }}</td>
+                    <td>{{ subfield.label }}</td>
+                </tr>
+                {% endfor %}<br><br>
+                {{ form[2].dash_margin_right.label }}<br>
+                {% for subfield in form[2].dash_margin_right %}
+                <tr>
+                    <td>{{ subfield }}</td>
+                    <td>{{ subfield.label }}</td>
+                </tr>
+                {% endfor %}<br><br>
+                {{ form[2].dash_margin_top.label }}<br>
+                {% for subfield in form[2].dash_margin_top %}
+                <tr>
+                    <td>{{ subfield }}</td>
+                    <td>{{ subfield.label }}</td>
+                </tr>
+                {% endfor %}<br><br>
+                {{ form[2].dash_margin_bottom.label }}<br>
+                {% for subfield in form[2].dash_margin_bottom %}
+                <tr>
+                    <td>{{ subfield }}</td>
+                    <td>{{ subfield.label }}</td>
+                </tr>
+                {% endfor %}<br><br>
+                <p align=right>
+                    {{ form[2].da_submit }}
+                </p>
+            </p>
+        </div>
+      </form>
+    <div>
+{% endblock %}

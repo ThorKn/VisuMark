@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+<div class="fluid-container">
+    <div class="row">
+        <div style="width: 100%; min-height:800px;">
+            <iframe
+                noresize='noresize'
+                style='position: absolute; background: transparent; width: 100%; height:100%;'
+                src={{ url_for('static', filename = 'docs/index.html') }}
+            </iframe>
+        </div>
+    <div>
+</div>
+{% endblock %}

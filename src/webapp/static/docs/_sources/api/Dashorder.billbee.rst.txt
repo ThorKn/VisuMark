@@ -1,0 +1,22 @@
+Dashorder.billbee package
+=========================
+
+Submodules
+----------
+
+Dashorder.billbee.bbhandler module
+----------------------------------
+
+.. automodule:: Dashorder.billbee.bbhandler
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: Dashorder.billbee
+   :members:
+   :undoc-members:
+   :show-inheritance:

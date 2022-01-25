@@ -1,0 +1,743 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Dashorder.statistics.statistics &mdash; Dashorder 0.0.post0.dev217+gbd9aeab.dirty documentation</title>
+
+
+
+
+
+
+
+
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+
+
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+
+
+
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+</head>
+
+<body class="wy-body-for-nav">
+
+
+  <div class="wy-grid-for-nav">
+
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+
+
+            <a href="../../../index.html" class="icon icon-home"> Dashorder
+
+
+
+          </a>
+
+
+
+
+              <div class="version">
+                0.0.post0.dev217+gbd9aeab.dirty
+              </div>
+
+
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+
+
+
+
+
+
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authors.html">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/modules.html">Module Reference</a></li>
+</ul>
+
+
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+
+      <nav class="wy-nav-top" aria-label="top navigation">
+
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Dashorder</a>
+
+      </nav>
+
+
+      <div class="wy-nav-content">
+
+        <div class="rst-content">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+
+      <li>Dashorder.statistics.statistics</li>
+
+
+      <li class="wy-breadcrumbs-aside">
+
+      </li>
+
+  </ul>
+
+
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <h1>Source code for Dashorder.statistics.statistics</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span> <span class="nn">Dashorder.config.config</span> <span class="k">import</span> <span class="n">div_tree</span>
+<span class="kn">from</span> <span class="nn">Dashorder.db.dbhandler</span> <span class="k">import</span> <span class="n">DBHandler</span>
+
+
+<div class="viewcode-block" id="Statistics"><a class="viewcode-back" href="../../../api/Dashorder.statistics.html#Dashorder.statistics.statistics.Statistics">[docs]</a><span class="k">class</span> <span class="nc">Statistics</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="n">slots</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;__weakref__&#39;</span><span class="p">,</span> <span class="s1">&#39;dbhandler&#39;</span><span class="p">,</span> <span class="s1">&#39;_zin&#39;</span><span class="p">,</span> <span class="s1">&#39;_pro&#39;</span><span class="p">,</span> <span class="s1">&#39;_sho_&#39;</span> <span class="s1">&#39;evaluate&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db_username</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">db_password</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">db_ip</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">db_port</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">db_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;maldaner&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Configure logging module name</span>
+        <span class="c1"># logging.setLogger(self.__class__.__name__)</span>
+
+        <span class="c1"># Connect to mongodb</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span> <span class="o">=</span> <span class="n">DBHandler</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="n">db_username</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="n">db_password</span><span class="p">,</span>
+                                   <span class="n">ip</span><span class="o">=</span><span class="n">db_ip</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">db_port</span><span class="p">,</span> <span class="n">dbname</span><span class="o">=</span><span class="n">db_name</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__shoKan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xvalues</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]],</span> <span class="n">ychoice</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                 <span class="n">gchoice</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">gvalues</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]):</span>
+        <span class="k">if</span> <span class="n">gchoice</span> <span class="o">==</span> <span class="s1">&#39;PRO&#39;</span><span class="p">:</span>
+            <span class="n">orders</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getOrdersMultiFilter</span><span class="p">(</span><span class="n">articles</span><span class="o">=</span><span class="n">gvalues</span><span class="p">,</span> <span class="n">shops</span><span class="o">=</span><span class="n">xvalues</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;s&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">])</span>
+            <span class="n">items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getArticlesByIds</span><span class="p">(</span><span class="n">gvalues</span><span class="p">)</span>
+            <span class="n">item_to_name</span> <span class="o">=</span> <span class="p">{</span><span class="n">product</span><span class="p">[</span><span class="s1">&#39;Id&#39;</span><span class="p">]:</span> <span class="n">product</span><span class="p">[</span><span class="s1">&#39;Title&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;Text&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">product</span> <span class="ow">in</span> <span class="n">items</span><span class="p">}</span>
+            <span class="n">itemkey</span> <span class="o">=</span> <span class="s1">&#39;ArticleId&#39;</span>
+        <span class="k">elif</span> <span class="n">gchoice</span> <span class="o">==</span> <span class="s1">&#39;KAT&#39;</span><span class="p">:</span>
+            <span class="n">orders</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getOrdersContainingCategories</span><span class="p">(</span><span class="n">gvalues</span><span class="p">,</span> <span class="n">shops</span><span class="o">=</span><span class="n">xvalues</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;cat&#39;</span><span class="p">,</span> <span class="s1">&#39;s&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">])</span>
+            <span class="n">items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getCategoriesByIds</span><span class="p">(</span><span class="n">gvalues</span><span class="p">)</span>
+            <span class="n">item_to_name</span> <span class="o">=</span> <span class="p">{</span><span class="n">category</span><span class="p">[</span><span class="s1">&#39;Id&#39;</span><span class="p">]:</span> <span class="n">category</span><span class="p">[</span><span class="s1">&#39;Name&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">category</span> <span class="ow">in</span> <span class="n">items</span><span class="p">}</span>
+            <span class="n">itemkey</span> <span class="o">=</span> <span class="s1">&#39;CategoryId&#39;</span>
+        <span class="k">elif</span> <span class="n">gchoice</span> <span class="o">==</span> <span class="s1">&#39;TAG&#39;</span><span class="p">:</span>
+            <span class="n">orders</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getOrdersContainingTags</span><span class="p">(</span><span class="n">gvalues</span><span class="p">,</span> <span class="n">shops</span><span class="o">=</span><span class="n">xvalues</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;t&#39;</span><span class="p">,</span> <span class="s1">&#39;s&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">])</span>
+            <span class="n">items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getTagsByIds</span><span class="p">(</span><span class="n">gvalues</span><span class="p">)</span>
+            <span class="n">item_to_name</span> <span class="o">=</span> <span class="p">{</span><span class="n">tag</span><span class="p">[</span><span class="s1">&#39;_id&#39;</span><span class="p">]:</span> <span class="n">tag</span><span class="p">[</span><span class="s1">&#39;Name&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">items</span><span class="p">}</span>
+            <span class="n">itemkey</span> <span class="o">=</span> <span class="s1">&#39;TagId&#39;</span>
+        <span class="c1"># TODO: PostLeitZahl</span>
+        <span class="k">elif</span> <span class="n">gchoice</span> <span class="o">==</span> <span class="s1">&#39;ALL&#39;</span><span class="p">:</span>
+            <span class="n">orders</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getOrdersMultiFilter</span><span class="p">(</span><span class="n">articles</span><span class="o">=</span><span class="n">xvalues</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">])</span>
+
+        <span class="n">shops</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getShopsByIds</span><span class="p">(</span><span class="n">xvalues</span><span class="p">)</span>
+        <span class="n">shop_to_name</span> <span class="o">=</span> <span class="p">{</span><span class="n">shop</span><span class="p">[</span><span class="s1">&#39;BillbeeShopId&#39;</span><span class="p">]:</span> <span class="n">shop</span><span class="p">[</span><span class="s1">&#39;BillbeeShopName&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">shop</span> <span class="ow">in</span> <span class="n">shops</span><span class="p">}</span>
+        <span class="nb">type</span> <span class="o">=</span> <span class="n">div_tree</span><span class="p">[</span><span class="s1">&#39;SHO&#39;</span><span class="p">][</span><span class="n">ychoice</span><span class="p">][</span><span class="n">gchoice</span><span class="p">][</span><span class="s1">&#39;type&#39;</span><span class="p">]</span>
+        <span class="n">xvals</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">yvals</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">lastitem</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="n">lastshop</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="n">lastcustomer</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+        <span class="k">for</span> <span class="n">order</span> <span class="ow">in</span> <span class="n">orders</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">gchoice</span> <span class="o">!=</span> <span class="s1">&#39;ALL&#39;</span> <span class="ow">and</span> <span class="n">lastitem</span> <span class="o">!=</span> <span class="n">order</span><span class="p">[</span><span class="n">itemkey</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">xvals</span> <span class="ow">and</span> <span class="n">yvals</span><span class="p">:</span>
+                    <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                        <span class="s1">&#39;labels&#39;</span> <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s1">&#39;pie&#39;</span> <span class="k">else</span> <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">xvals</span><span class="p">,</span>
+                        <span class="s1">&#39;values&#39;</span> <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s1">&#39;pie&#39;</span> <span class="k">else</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">yvals</span><span class="p">,</span>
+                        <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span>
+                        <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">item_to_name</span><span class="p">[</span><span class="n">lastitem</span><span class="p">]</span>
+                    <span class="p">})</span>
+                    <span class="n">xvals</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="n">yvals</span> <span class="o">=</span> <span class="p">[]</span>
+
+                <span class="n">lastitem</span> <span class="o">=</span> <span class="n">order</span><span class="p">[</span><span class="n">itemkey</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">lastshop</span> <span class="o">!=</span> <span class="n">order</span><span class="p">[</span><span class="s1">&#39;ShopId&#39;</span><span class="p">]:</span>
+                <span class="n">lastshop</span> <span class="o">=</span> <span class="n">order</span><span class="p">[</span><span class="s1">&#39;ShopId&#39;</span><span class="p">]</span>
+                <span class="n">lastcustomer</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+                <span class="n">xvals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">shop_to_name</span><span class="p">[</span><span class="n">lastshop</span><span class="p">])</span>
+                <span class="n">yvals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">lastcustomer</span> <span class="o">!=</span> <span class="n">order</span><span class="p">[</span><span class="s1">&#39;CustomerId&#39;</span><span class="p">]:</span>
+                <span class="n">lastcustomer</span> <span class="o">=</span> <span class="n">order</span><span class="p">[</span><span class="s1">&#39;CustomerId&#39;</span><span class="p">]</span>
+                <span class="n">yvals</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+            <span class="s1">&#39;labels&#39;</span> <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s1">&#39;pie&#39;</span> <span class="k">else</span> <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">xvals</span><span class="p">,</span>
+            <span class="s1">&#39;values&#39;</span> <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s1">&#39;pie&#39;</span> <span class="k">else</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">yvals</span><span class="p">,</span>
+            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span>
+            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;ALL&#39;</span> <span class="k">if</span> <span class="n">gchoice</span> <span class="o">==</span> <span class="s1">&#39;ALL&#39;</span> <span class="k">else</span> <span class="n">item_to_name</span><span class="p">[</span><span class="n">lastitem</span><span class="p">]</span>
+        <span class="p">})</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">xvalues</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">type</span> <span class="o">!=</span> <span class="s1">&#39;pie&#39;</span><span class="p">:</span>
+            <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;labels&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;x&#39;</span><span class="p">]</span>
+            <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;values&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;y&#39;</span><span class="p">]</span>
+            <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;pie&#39;</span>
+            <span class="k">del</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;x&#39;</span><span class="p">]</span>
+            <span class="k">del</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;y&#39;</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="k">def</span> <span class="nf">_sho</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xvalues</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]],</span> <span class="n">ychoice</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">gchoice</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">gvalues</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]):</span>
+        <span class="k">if</span> <span class="n">ychoice</span> <span class="o">==</span> <span class="s1">&#39;KAN&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__shoKan</span><span class="p">(</span><span class="n">xvalues</span><span class="p">,</span> <span class="n">ychoice</span><span class="p">,</span> <span class="n">gchoice</span><span class="p">,</span> <span class="n">gvalues</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">gchoice</span> <span class="o">==</span> <span class="s1">&#39;PRO&#39;</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getOrdersMultiFilter</span><span class="p">(</span><span class="n">shops</span><span class="o">=</span><span class="n">xvalues</span><span class="p">,</span> <span class="n">articles</span><span class="o">=</span><span class="n">gvalues</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;s&#39;</span><span class="p">])</span>
+            <span class="n">items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getArticlesByIds</span><span class="p">(</span><span class="n">gvalues</span><span class="p">)</span>
+            <span class="n">item_to_name</span> <span class="o">=</span> <span class="p">{</span><span class="n">product</span><span class="p">[</span><span class="s1">&#39;Id&#39;</span><span class="p">]:</span> <span class="n">product</span><span class="p">[</span><span class="s1">&#39;Title&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;Text&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">product</span> <span class="ow">in</span> <span class="n">items</span><span class="p">}</span>
+            <span class="n">itemkey</span> <span class="o">=</span> <span class="s1">&#39;ArticleId&#39;</span>
+        <span class="k">elif</span> <span class="n">gchoice</span> <span class="o">==</span> <span class="s1">&#39;KUN&#39;</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getOrdersMultiFilter</span><span class="p">(</span><span class="n">shops</span><span class="o">=</span><span class="n">xvalues</span><span class="p">,</span> <span class="n">customers</span><span class="o">=</span><span class="n">gvalues</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="s1">&#39;s&#39;</span><span class="p">])</span>
+            <span class="n">items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getCustomersByIds</span><span class="p">(</span><span class="n">gvalues</span><span class="p">)</span>
+            <span class="n">item_to_name</span> <span class="o">=</span> <span class="p">{</span><span class="n">customer</span><span class="p">[</span><span class="s1">&#39;Id&#39;</span><span class="p">]:</span> <span class="n">customer</span><span class="p">[</span><span class="s1">&#39;Id&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">customer</span> <span class="ow">in</span> <span class="n">items</span><span class="p">}</span>
+            <span class="n">itemkey</span> <span class="o">=</span> <span class="s1">&#39;CustomerId&#39;</span>
+        <span class="k">elif</span> <span class="n">gchoice</span> <span class="o">==</span> <span class="s1">&#39;TAG&#39;</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getOrdersContainingTags</span><span class="p">(</span><span class="n">gvalues</span><span class="p">,</span> <span class="n">shops</span><span class="o">=</span><span class="n">xvalues</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;t&#39;</span><span class="p">,</span> <span class="s1">&#39;s&#39;</span><span class="p">])</span>
+            <span class="n">items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getTagsByIds</span><span class="p">(</span><span class="n">gvalues</span><span class="p">)</span>
+            <span class="n">item_to_name</span> <span class="o">=</span> <span class="p">{</span><span class="n">tag</span><span class="p">[</span><span class="s1">&#39;_id&#39;</span><span class="p">]:</span> <span class="n">tag</span><span class="p">[</span><span class="s1">&#39;Name&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">items</span><span class="p">}</span>
+            <span class="n">itemkey</span> <span class="o">=</span> <span class="s1">&#39;TagId&#39;</span>
+        <span class="k">elif</span> <span class="n">gchoice</span> <span class="o">==</span> <span class="s1">&#39;KAT&#39;</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getOrdersContainingCategories</span><span class="p">(</span><span class="n">gvalues</span><span class="p">,</span> <span class="n">shops</span><span class="o">=</span><span class="n">xvalues</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;cat&#39;</span><span class="p">,</span> <span class="s1">&#39;s&#39;</span><span class="p">])</span>
+            <span class="n">items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getCategoriesByIds</span><span class="p">(</span><span class="n">gvalues</span><span class="p">)</span>
+            <span class="n">item_to_name</span> <span class="o">=</span> <span class="p">{</span><span class="n">category</span><span class="p">[</span><span class="s1">&#39;Id&#39;</span><span class="p">]:</span> <span class="n">category</span><span class="p">[</span><span class="s1">&#39;Name&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">category</span> <span class="ow">in</span> <span class="n">items</span><span class="p">}</span>
+            <span class="n">itemkey</span> <span class="o">=</span> <span class="s1">&#39;CategoryId&#39;</span>
+        <span class="k">elif</span> <span class="n">gchoice</span> <span class="o">==</span> <span class="s1">&#39;ALL&#39;</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getOrdersMultiFilter</span><span class="p">(</span><span class="n">shops</span><span class="o">=</span><span class="n">xvalues</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;s&#39;</span><span class="p">])</span>
+            <span class="n">itemkey</span> <span class="o">=</span> <span class="s1">&#39;ShopId&#39;</span>
+
+        <span class="n">shops</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getShopsByIds</span><span class="p">(</span><span class="n">xvalues</span><span class="p">)</span>
+        <span class="n">shop_to_name</span> <span class="o">=</span> <span class="p">{</span><span class="n">shop</span><span class="p">[</span><span class="s1">&#39;BillbeeShopId&#39;</span><span class="p">]:</span> <span class="n">shop</span><span class="p">[</span><span class="s1">&#39;BillbeeShopName&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">shop</span> <span class="ow">in</span> <span class="n">shops</span><span class="p">}</span>
+        <span class="n">xvals</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">yvals</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="nb">type</span> <span class="o">=</span> <span class="n">div_tree</span><span class="p">[</span><span class="s1">&#39;SHO&#39;</span><span class="p">][</span><span class="n">ychoice</span><span class="p">][</span><span class="n">gchoice</span><span class="p">][</span><span class="s1">&#39;type&#39;</span><span class="p">]</span>
+        <span class="n">lastitem</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+        <span class="k">for</span> <span class="n">dataset</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">dataset</span><span class="p">[</span><span class="n">itemkey</span><span class="p">]</span> <span class="o">!=</span> <span class="n">lastitem</span> <span class="ow">and</span> <span class="n">gchoice</span> <span class="o">!=</span> <span class="s1">&#39;ALL&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">xvals</span> <span class="ow">and</span> <span class="n">yvals</span><span class="p">:</span>
+                    <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                        <span class="s1">&#39;labels&#39;</span> <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s1">&#39;pie&#39;</span> <span class="k">else</span> <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">xvals</span><span class="p">,</span>
+                        <span class="s1">&#39;values&#39;</span> <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s1">&#39;pie&#39;</span> <span class="k">else</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">yvals</span><span class="p">,</span>
+                        <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span>
+                        <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">item_to_name</span><span class="p">[</span><span class="n">lastitem</span><span class="p">]</span>
+                    <span class="p">})</span>
+                    <span class="n">xvals</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="n">yvals</span> <span class="o">=</span> <span class="p">[]</span>
+
+                <span class="n">lastitem</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="n">itemkey</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">xvals</span><span class="p">)</span> <span class="ow">or</span> <span class="n">xvals</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">shop_to_name</span><span class="p">[</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;ShopId&#39;</span><span class="p">]]:</span>
+                <span class="n">xvals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">shop_to_name</span><span class="p">[</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;ShopId&#39;</span><span class="p">]])</span>
+
+                <span class="k">if</span> <span class="n">ychoice</span> <span class="o">==</span> <span class="s1">&#39;UMS&#39;</span><span class="p">:</span>
+                    <span class="n">yvals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;Price&#39;</span><span class="p">])</span>
+                <span class="k">elif</span> <span class="n">ychoice</span> <span class="o">==</span> <span class="s1">&#39;BAN&#39;</span><span class="p">:</span>
+                    <span class="n">yvals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="n">xvals</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">shop_to_name</span><span class="p">[</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;ShopId&#39;</span><span class="p">]]:</span>
+                <span class="k">if</span> <span class="n">ychoice</span> <span class="o">==</span> <span class="s1">&#39;UMS&#39;</span><span class="p">:</span>
+                    <span class="n">yvals</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;Price&#39;</span><span class="p">]</span>
+                <span class="k">elif</span> <span class="n">ychoice</span> <span class="o">==</span> <span class="s1">&#39;BAN&#39;</span><span class="p">:</span>
+                    <span class="n">yvals</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+            <span class="s1">&#39;labels&#39;</span> <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s1">&#39;pie&#39;</span> <span class="k">else</span> <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">xvals</span><span class="p">,</span>
+            <span class="s1">&#39;values&#39;</span> <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s1">&#39;pie&#39;</span> <span class="k">else</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">yvals</span><span class="p">,</span>
+            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span>
+            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;ALL&#39;</span> <span class="k">if</span> <span class="n">gchoice</span> <span class="o">==</span> <span class="s1">&#39;ALL&#39;</span> <span class="k">else</span> <span class="n">item_to_name</span><span class="p">[</span><span class="n">lastitem</span><span class="p">]</span>
+        <span class="p">})</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">xvalues</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">type</span> <span class="o">!=</span> <span class="s1">&#39;pie&#39;</span><span class="p">:</span>
+            <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;labels&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;x&#39;</span><span class="p">]</span>
+            <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;values&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;y&#39;</span><span class="p">]</span>
+            <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;pie&#39;</span>
+            <span class="k">del</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;x&#39;</span><span class="p">]</span>
+            <span class="k">del</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;y&#39;</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="k">def</span> <span class="nf">_pro</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xvalues</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]],</span> <span class="n">ychoice</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">gchoice</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">gvalues</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]):</span>
+        <span class="k">if</span> <span class="n">gchoice</span> <span class="o">==</span> <span class="s1">&#39;SHO&#39;</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getOrdersMultiFilter</span><span class="p">(</span><span class="n">articles</span><span class="o">=</span><span class="n">xvalues</span><span class="p">,</span> <span class="n">shops</span><span class="o">=</span><span class="n">gvalues</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;s&#39;</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">])</span>
+            <span class="n">items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getShopsByIds</span><span class="p">(</span><span class="n">gvalues</span><span class="p">)</span>
+            <span class="n">item_to_name</span> <span class="o">=</span> <span class="p">{</span><span class="n">shop</span><span class="p">[</span><span class="s1">&#39;BillbeeShopId&#39;</span><span class="p">]:</span> <span class="n">shop</span><span class="p">[</span><span class="s1">&#39;BillbeeShopName&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">shop</span> <span class="ow">in</span> <span class="n">items</span><span class="p">}</span>
+            <span class="n">itemkey</span> <span class="o">=</span> <span class="s1">&#39;ShopId&#39;</span>
+        <span class="k">elif</span> <span class="n">gchoice</span> <span class="o">==</span> <span class="s1">&#39;KUN&#39;</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getOrdersMultiFilter</span><span class="p">(</span><span class="n">articles</span><span class="o">=</span><span class="n">xvalues</span><span class="p">,</span> <span class="n">customers</span><span class="o">=</span><span class="n">gvalues</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">])</span>
+            <span class="n">items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getCustomersByIds</span><span class="p">(</span><span class="n">gvalues</span><span class="p">)</span>
+            <span class="n">item_to_name</span> <span class="o">=</span> <span class="p">{</span><span class="n">customer</span><span class="p">[</span><span class="s1">&#39;Id&#39;</span><span class="p">]:</span> <span class="n">customer</span><span class="p">[</span><span class="s1">&#39;Id&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">customer</span> <span class="ow">in</span> <span class="n">items</span><span class="p">}</span>
+            <span class="n">itemkey</span> <span class="o">=</span> <span class="s1">&#39;CustomerId&#39;</span>
+        <span class="k">elif</span> <span class="n">gchoice</span> <span class="o">==</span> <span class="s1">&#39;ALL&#39;</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getOrdersMultiFilter</span><span class="p">(</span><span class="n">articles</span><span class="o">=</span><span class="n">xvalues</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">])</span>
+            <span class="n">itemkey</span> <span class="o">=</span> <span class="s1">&#39;ArticleId&#39;</span>
+
+        <span class="n">products</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getArticlesByIds</span><span class="p">(</span><span class="n">xvalues</span><span class="p">)</span>
+        <span class="n">product_to_name</span> <span class="o">=</span> <span class="p">{</span><span class="n">product</span><span class="p">[</span><span class="s1">&#39;Id&#39;</span><span class="p">]:</span> <span class="n">product</span><span class="p">[</span><span class="s1">&#39;Title&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;Text&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">product</span> <span class="ow">in</span> <span class="n">products</span><span class="p">}</span>
+        <span class="n">xvals</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">yvals</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="nb">type</span> <span class="o">=</span> <span class="n">div_tree</span><span class="p">[</span><span class="s1">&#39;PRO&#39;</span><span class="p">][</span><span class="n">ychoice</span><span class="p">][</span><span class="n">gchoice</span><span class="p">][</span><span class="s1">&#39;type&#39;</span><span class="p">]</span>
+        <span class="n">lastitem</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+        <span class="k">for</span> <span class="n">dataset</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">dataset</span><span class="p">[</span><span class="n">itemkey</span><span class="p">]</span> <span class="o">!=</span> <span class="n">lastitem</span> <span class="ow">and</span> <span class="n">gchoice</span> <span class="o">!=</span> <span class="s1">&#39;ALL&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">xvals</span> <span class="ow">and</span> <span class="n">yvals</span><span class="p">:</span>
+                    <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                        <span class="s1">&#39;labels&#39;</span> <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s1">&#39;pie&#39;</span> <span class="k">else</span> <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">xvals</span><span class="p">,</span>
+                        <span class="s1">&#39;values&#39;</span> <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s1">&#39;pie&#39;</span> <span class="k">else</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">yvals</span><span class="p">,</span>
+                        <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span>
+                        <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">item_to_name</span><span class="p">[</span><span class="n">lastitem</span><span class="p">]</span>
+                    <span class="p">})</span>
+                    <span class="n">xvals</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="n">yvals</span> <span class="o">=</span> <span class="p">[]</span>
+
+                <span class="n">lastitem</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="n">itemkey</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">xvals</span><span class="p">)</span> <span class="ow">or</span> <span class="n">xvals</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">product_to_name</span><span class="p">[</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;ArticleId&#39;</span><span class="p">]]:</span>
+                <span class="n">xvals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">product_to_name</span><span class="p">[</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;ArticleId&#39;</span><span class="p">]])</span>
+
+                <span class="k">if</span> <span class="n">ychoice</span> <span class="o">==</span> <span class="s1">&#39;UMS&#39;</span><span class="p">:</span>
+                    <span class="n">yvals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;Price&#39;</span><span class="p">])</span>
+                <span class="k">elif</span> <span class="n">ychoice</span> <span class="o">==</span> <span class="s1">&#39;BAN&#39;</span><span class="p">:</span>
+                    <span class="n">yvals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="n">xvals</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">product_to_name</span><span class="p">[</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;ArticleId&#39;</span><span class="p">]]:</span>
+                <span class="k">if</span> <span class="n">ychoice</span> <span class="o">==</span> <span class="s1">&#39;UMS&#39;</span><span class="p">:</span>
+                    <span class="n">yvals</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;Price&#39;</span><span class="p">]</span>
+                <span class="k">elif</span> <span class="n">ychoice</span> <span class="o">==</span> <span class="s1">&#39;BAN&#39;</span><span class="p">:</span>
+                    <span class="n">yvals</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+            <span class="s1">&#39;labels&#39;</span> <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s1">&#39;pie&#39;</span> <span class="k">else</span> <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">xvals</span><span class="p">,</span>
+            <span class="s1">&#39;values&#39;</span> <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s1">&#39;pie&#39;</span> <span class="k">else</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">yvals</span><span class="p">,</span>
+            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span>
+            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;ALL&#39;</span> <span class="k">if</span> <span class="n">gchoice</span> <span class="o">==</span> <span class="s1">&#39;ALL&#39;</span> <span class="k">else</span> <span class="n">item_to_name</span><span class="p">[</span><span class="n">lastitem</span><span class="p">]</span>
+        <span class="p">})</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">xvalues</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">type</span> <span class="o">!=</span> <span class="s1">&#39;pie&#39;</span><span class="p">:</span>
+            <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;labels&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;x&#39;</span><span class="p">]</span>
+            <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;values&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;y&#39;</span><span class="p">]</span>
+            <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;pie&#39;</span>
+            <span class="k">del</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;x&#39;</span><span class="p">]</span>
+            <span class="k">del</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;y&#39;</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="k">def</span> <span class="nf">_zin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ychoice</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">gchoice</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">gvalues</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]],</span> <span class="n">orderfunc</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+             <span class="n">itemfunc</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">order_itemkey</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">item_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">item_evalname</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="c1"># Get orders and relevant items from database</span>
+        <span class="n">orders</span> <span class="o">=</span> <span class="n">orderfunc</span><span class="p">(</span><span class="n">gvalues</span><span class="p">)</span>
+        <span class="n">item</span> <span class="o">=</span> <span class="n">itemfunc</span><span class="p">(</span><span class="n">gvalues</span><span class="p">)</span> <span class="k">if</span> <span class="n">itemfunc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># TODO: next() without ExceptionHandling (empty list, end of list) is dangerous!</span>
+        <span class="n">lastitem</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="k">if</span> <span class="n">item</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">dates</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">sales</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># For each item, accumulate the revenue in total or per day</span>
+        <span class="k">for</span> <span class="n">order</span> <span class="ow">in</span> <span class="n">orders</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">gchoice</span> <span class="o">!=</span> <span class="s1">&#39;ALL&#39;</span> <span class="ow">and</span> <span class="n">lastitem</span><span class="p">[</span><span class="n">item_key</span><span class="p">]</span> <span class="o">!=</span> <span class="n">order</span><span class="p">[</span><span class="n">order_itemkey</span><span class="p">]:</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                    <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">dates</span><span class="p">,</span>
+                    <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">sales</span><span class="p">,</span>
+                    <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="n">div_tree</span><span class="p">[</span><span class="s1">&#39;ZIN&#39;</span><span class="p">][</span><span class="n">ychoice</span><span class="p">][</span><span class="n">gchoice</span><span class="p">][</span><span class="s1">&#39;type&#39;</span><span class="p">],</span>
+                    <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;ALL&#39;</span> <span class="k">if</span> <span class="n">gchoice</span> <span class="o">==</span> <span class="s1">&#39;ALL&#39;</span> <span class="k">else</span> <span class="nb">eval</span><span class="p">(</span><span class="s1">&#39;lastitem&#39;</span> <span class="o">+</span> <span class="n">item_evalname</span><span class="p">)</span>
+                <span class="p">})</span>
+                <span class="n">dates</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">sales</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">lastitem</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">dates</span><span class="p">):</span>
+                <span class="n">dates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">order</span><span class="p">[</span><span class="s1">&#39;CreatedAt&#39;</span><span class="p">])</span>
+
+                <span class="k">if</span> <span class="n">ychoice</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;BAN&#39;</span><span class="p">,</span> <span class="s1">&#39;BAT&#39;</span><span class="p">]:</span>
+                    <span class="n">sales</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">gchoice</span> <span class="o">==</span> <span class="s1">&#39;ALL&#39;</span><span class="p">:</span>
+                        <span class="n">sales</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">order</span><span class="p">[</span><span class="s1">&#39;OrderItems&#39;</span><span class="p">][</span><span class="s1">&#39;TotalPrice&#39;</span><span class="p">])</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">sales</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">order</span><span class="p">[</span><span class="s1">&#39;Price&#39;</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="n">dates</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">order</span><span class="p">[</span><span class="s1">&#39;CreatedAt&#39;</span><span class="p">]:</span>
+                <span class="n">dates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">order</span><span class="p">[</span><span class="s1">&#39;CreatedAt&#39;</span><span class="p">])</span>
+
+                <span class="c1"># Accumulate in total</span>
+                <span class="k">if</span> <span class="n">ychoice</span> <span class="o">==</span> <span class="s1">&#39;UMS&#39;</span><span class="p">:</span>
+                    <span class="n">sales</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sales</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">order</span><span class="p">[</span><span class="s1">&#39;OrderItems&#39;</span><span class="p">][</span><span class="s1">&#39;TotalPrice&#39;</span><span class="p">]</span>
+                                 <span class="k">if</span> <span class="n">gchoice</span> <span class="o">==</span> <span class="s1">&#39;ALL&#39;</span> <span class="k">else</span> <span class="n">order</span><span class="p">[</span><span class="s1">&#39;Price&#39;</span><span class="p">]))</span>
+                <span class="c1"># Accumulate per day</span>
+                <span class="k">elif</span> <span class="n">ychoice</span> <span class="o">==</span> <span class="s1">&#39;UMT&#39;</span><span class="p">:</span>
+                    <span class="n">sales</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">order</span><span class="p">[</span><span class="s1">&#39;OrderItems&#39;</span><span class="p">][</span><span class="s1">&#39;TotalPrice&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">gchoice</span> <span class="o">==</span> <span class="s1">&#39;ALL&#39;</span> <span class="k">else</span> <span class="n">order</span><span class="p">[</span><span class="s1">&#39;Price&#39;</span><span class="p">])</span>
+                <span class="k">elif</span> <span class="n">ychoice</span> <span class="o">==</span> <span class="s1">&#39;BAN&#39;</span><span class="p">:</span>
+                    <span class="n">sales</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sales</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">ychoice</span> <span class="o">==</span> <span class="s1">&#39;BAT&#39;</span><span class="p">:</span>
+                    <span class="n">sales</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">ychoice</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;BAN&#39;</span><span class="p">,</span> <span class="s1">&#39;BAT&#39;</span><span class="p">]:</span>
+                    <span class="n">sales</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">sales</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">order</span><span class="p">[</span><span class="s1">&#39;OrderItems&#39;</span><span class="p">][</span><span class="s1">&#39;TotalPrice&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">gchoice</span> <span class="o">==</span> <span class="s1">&#39;ALL&#39;</span> <span class="k">else</span> <span class="n">order</span><span class="p">[</span><span class="s1">&#39;Price&#39;</span><span class="p">]</span>
+
+        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+            <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">dates</span><span class="p">,</span>
+            <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">sales</span><span class="p">,</span>
+            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="n">div_tree</span><span class="p">[</span><span class="s1">&#39;ZIN&#39;</span><span class="p">][</span><span class="n">ychoice</span><span class="p">][</span><span class="n">gchoice</span><span class="p">][</span><span class="s1">&#39;type&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;ALL&#39;</span> <span class="k">if</span> <span class="n">gchoice</span> <span class="o">==</span> <span class="s1">&#39;ALL&#39;</span> <span class="k">else</span> <span class="nb">eval</span><span class="p">(</span><span class="s1">&#39;lastitem&#39;</span> <span class="o">+</span> <span class="n">item_evalname</span><span class="p">)</span>
+        <span class="p">})</span>
+
+        <span class="k">return</span> <span class="n">result</span>
+
+<div class="viewcode-block" id="Statistics.evaluate"><a class="viewcode-back" href="../../../api/Dashorder.statistics.html#Dashorder.statistics.statistics.Statistics.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xchoice</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">xvalues</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span> <span class="n">ychoice</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">yvalues</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span>
+                 <span class="n">gchoice</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">gvalues</span><span class="p">:</span> <span class="n">List</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+        <span class="c1"># TODO: google-style docstring</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        query := {</span>
+<span class="sd">            &#39;xchoice&#39;: &#39;Abbrevation like &quot;ZIN&quot; (without quotes)&#39;,</span>
+<span class="sd">            &#39;xvalues&#39;: &#39;Options for xchoice (List)&#39;</span>
+<span class="sd">            &#39;ychoice&#39;: &#39;Abbrevation like &quot;UMS&quot; (without quotes)&#39;,</span>
+<span class="sd">            &#39;yvalues&#39;: &#39;Options for ychoice (List)&#39;</span>
+<span class="sd">            &#39;gchoice&#39;: &#39;Abbrevation like &quot;PRO&quot; (without quotes)&#39;,</span>
+<span class="sd">            &#39;gvalues&#39;: &#39;Options for gchoice (List)&#39;</span>
+<span class="sd">        }</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;line&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;dummy&#39;</span><span class="p">}]</span>
+
+        <span class="k">if</span> <span class="n">xchoice</span> <span class="o">==</span> <span class="s1">&#39;ZIN&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ychoice</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;BAN&#39;</span><span class="p">,</span> <span class="s1">&#39;BAT&#39;</span><span class="p">,</span> <span class="s1">&#39;UMS&#39;</span><span class="p">,</span> <span class="s1">&#39;UMT&#39;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">gchoice</span> <span class="o">==</span> <span class="s1">&#39;ALL&#39;</span><span class="p">:</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zin</span><span class="p">(</span>
+                        <span class="n">ychoice</span><span class="p">,</span> <span class="n">gchoice</span><span class="p">,</span> <span class="n">gvalues</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getOrdersByIds</span><span class="p">,</span>
+                        <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span>
+                    <span class="p">)</span>
+                <span class="k">if</span> <span class="n">gchoice</span> <span class="o">==</span> <span class="s1">&#39;PRO&#39;</span><span class="p">:</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zin</span><span class="p">(</span>
+                        <span class="n">ychoice</span><span class="p">,</span> <span class="n">gchoice</span><span class="p">,</span> <span class="n">gvalues</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getOrdersContainingArticles</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getArticlesByIds</span><span class="p">,</span>
+                        <span class="s1">&#39;ArticleId&#39;</span><span class="p">,</span> <span class="s1">&#39;Id&#39;</span><span class="p">,</span> <span class="s1">&#39;[&quot;Title&quot;][0][&quot;Text&quot;]&#39;</span>
+                    <span class="p">)</span>
+                <span class="k">elif</span> <span class="n">gchoice</span> <span class="o">==</span> <span class="s1">&#39;SHO&#39;</span><span class="p">:</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zin</span><span class="p">(</span>
+                        <span class="n">ychoice</span><span class="p">,</span> <span class="n">gchoice</span><span class="p">,</span> <span class="n">gvalues</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getOrdersContainingShops</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getShopsByIds</span><span class="p">,</span>
+                        <span class="s1">&#39;ShopId&#39;</span><span class="p">,</span> <span class="s1">&#39;BillbeeShopId&#39;</span><span class="p">,</span> <span class="s1">&#39;[&quot;BillbeeShopName&quot;]&#39;</span>
+                    <span class="p">)</span>
+                <span class="k">elif</span> <span class="n">gchoice</span> <span class="o">==</span> <span class="s1">&#39;TAG&#39;</span><span class="p">:</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zin</span><span class="p">(</span>
+                        <span class="n">ychoice</span><span class="p">,</span> <span class="n">gchoice</span><span class="p">,</span> <span class="n">gvalues</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getOrdersContainingTags</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getTagsByIds</span><span class="p">,</span>
+                        <span class="s1">&#39;TagId&#39;</span><span class="p">,</span> <span class="s1">&#39;_id&#39;</span><span class="p">,</span> <span class="s1">&#39;[&quot;Name&quot;]&#39;</span>
+                    <span class="p">)</span>
+                <span class="k">elif</span> <span class="n">gchoice</span> <span class="o">==</span> <span class="s1">&#39;KAT&#39;</span><span class="p">:</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zin</span><span class="p">(</span>
+                        <span class="n">ychoice</span><span class="p">,</span> <span class="n">gchoice</span><span class="p">,</span> <span class="n">gvalues</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getOrdersContainingCategories</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getCategoriesByIds</span><span class="p">,</span>
+                        <span class="s1">&#39;CategoryId&#39;</span><span class="p">,</span> <span class="s1">&#39;Id&#39;</span><span class="p">,</span> <span class="s1">&#39;[&quot;Name&quot;]&#39;</span>
+                    <span class="p">)</span>
+                <span class="k">elif</span> <span class="n">gchoice</span> <span class="o">==</span> <span class="s1">&#39;KUN&#39;</span><span class="p">:</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zin</span><span class="p">(</span>
+                        <span class="n">ychoice</span><span class="p">,</span> <span class="n">gchoice</span><span class="p">,</span> <span class="n">gvalues</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getOrdersContainingCustomers</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getCustomersByIds</span><span class="p">,</span>
+                        <span class="s1">&#39;CustomerId&#39;</span><span class="p">,</span> <span class="s1">&#39;Id&#39;</span><span class="p">,</span> <span class="s1">&#39;[&quot;Id&quot;]&#39;</span>
+                    <span class="p">)</span>
+                <span class="k">elif</span> <span class="n">gchoice</span> <span class="o">==</span> <span class="s1">&#39;PLZ&#39;</span><span class="p">:</span>
+                    <span class="c1"># Get orders and categories from database</span>
+                    <span class="n">orders</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getOrdersContainingZips</span><span class="p">(</span><span class="n">gvalues</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">gvalues</span><span class="p">:</span>
+                        <span class="n">gvalues</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)]</span>
+
+                    <span class="n">zipdict</span> <span class="o">=</span> <span class="p">{}</span>
+                    <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">gvalues</span><span class="p">:</span>
+                        <span class="n">zipdict</span><span class="p">[</span><span class="n">value</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                            <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                            <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="n">div_tree</span><span class="p">[</span><span class="n">xchoice</span><span class="p">][</span><span class="n">ychoice</span><span class="p">][</span><span class="n">gchoice</span><span class="p">][</span><span class="s1">&#39;type&#39;</span><span class="p">],</span>
+                            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">value</span>
+                        <span class="p">}</span>
+
+                    <span class="c1"># TODO: swap out into function</span>
+                    <span class="c1"># For each zip, accumulate the revenue in total or per day</span>
+                    <span class="k">for</span> <span class="n">order</span> <span class="ow">in</span> <span class="n">orders</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">zipdict</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">order</span><span class="p">[</span><span class="s1">&#39;Zip&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+                                <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">zipdict</span><span class="p">[</span><span class="n">value</span><span class="p">][</span><span class="s1">&#39;x&#39;</span><span class="p">]):</span>
+                                    <span class="n">zipdict</span><span class="p">[</span><span class="n">value</span><span class="p">][</span><span class="s1">&#39;x&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">order</span><span class="p">[</span><span class="s1">&#39;CreatedAt&#39;</span><span class="p">])</span>
+
+                                    <span class="k">if</span> <span class="n">ychoice</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;BAN&#39;</span><span class="p">,</span> <span class="s1">&#39;BAT&#39;</span><span class="p">]:</span>
+                                        <span class="n">zipdict</span><span class="p">[</span><span class="n">value</span><span class="p">][</span><span class="s1">&#39;y&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                                    <span class="k">else</span><span class="p">:</span>
+                                        <span class="n">zipdict</span><span class="p">[</span><span class="n">value</span><span class="p">][</span><span class="s1">&#39;y&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">order</span><span class="p">[</span><span class="s1">&#39;Price&#39;</span><span class="p">])</span>
+                                <span class="k">elif</span> <span class="n">zipdict</span><span class="p">[</span><span class="n">value</span><span class="p">][</span><span class="s1">&#39;x&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">order</span><span class="p">[</span><span class="s1">&#39;CreatedAt&#39;</span><span class="p">]:</span>
+                                    <span class="n">zipdict</span><span class="p">[</span><span class="n">value</span><span class="p">][</span><span class="s1">&#39;x&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">order</span><span class="p">[</span><span class="s1">&#39;CreatedAt&#39;</span><span class="p">])</span>
+
+                                    <span class="c1"># Accumulate in total</span>
+                                    <span class="k">if</span> <span class="n">ychoice</span> <span class="o">==</span> <span class="s1">&#39;UMS&#39;</span><span class="p">:</span>
+                                        <span class="n">zipdict</span><span class="p">[</span><span class="n">value</span><span class="p">][</span><span class="s1">&#39;y&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                                            <span class="n">zipdict</span><span class="p">[</span><span class="n">value</span><span class="p">][</span><span class="s1">&#39;y&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">order</span><span class="p">[</span><span class="s1">&#39;Price&#39;</span><span class="p">]</span>
+                                        <span class="p">)</span>
+                                    <span class="c1"># Accumulate per day</span>
+                                    <span class="k">elif</span> <span class="n">ychoice</span> <span class="o">==</span> <span class="s1">&#39;UMT&#39;</span><span class="p">:</span>
+                                        <span class="n">zipdict</span><span class="p">[</span><span class="n">value</span><span class="p">][</span><span class="s1">&#39;y&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">order</span><span class="p">[</span><span class="s1">&#39;Price&#39;</span><span class="p">])</span>
+                                    <span class="k">elif</span> <span class="n">ychoice</span> <span class="o">==</span> <span class="s1">&#39;BAN&#39;</span><span class="p">:</span>
+                                        <span class="n">zipdict</span><span class="p">[</span><span class="n">value</span><span class="p">][</span><span class="s1">&#39;y&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                                            <span class="n">zipdict</span><span class="p">[</span><span class="n">value</span><span class="p">][</span><span class="s1">&#39;y&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+                                        <span class="p">)</span>
+                                    <span class="k">elif</span> <span class="n">ychoice</span> <span class="o">==</span> <span class="s1">&#39;BAT&#39;</span><span class="p">:</span>
+                                        <span class="n">zipdict</span><span class="p">[</span><span class="n">value</span><span class="p">][</span><span class="s1">&#39;y&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                                <span class="k">else</span><span class="p">:</span>
+                                    <span class="k">if</span> <span class="n">ychoice</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;BAN&#39;</span><span class="p">,</span> <span class="s1">&#39;BAT&#39;</span><span class="p">]:</span>
+                                        <span class="n">zipdict</span><span class="p">[</span><span class="n">value</span><span class="p">][</span><span class="s1">&#39;y&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                                    <span class="k">else</span><span class="p">:</span>
+                                        <span class="n">zipdict</span><span class="p">[</span><span class="n">value</span><span class="p">][</span><span class="s1">&#39;y&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">order</span><span class="p">[</span><span class="s1">&#39;Price&#39;</span><span class="p">]</span>
+
+                    <span class="n">result</span> <span class="o">=</span> <span class="p">[</span><span class="n">zipdict</span><span class="p">[</span><span class="n">val</span><span class="p">]</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">zipdict</span><span class="p">]</span>
+
+        <span class="k">elif</span> <span class="n">xchoice</span> <span class="o">==</span> <span class="s1">&#39;PRO&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ychoice</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;UMS&#39;</span><span class="p">,</span> <span class="s1">&#39;BAN&#39;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">gchoice</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;SHO&#39;</span><span class="p">,</span> <span class="s1">&#39;KUN&#39;</span><span class="p">,</span> <span class="s1">&#39;ALL&#39;</span><span class="p">]:</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pro</span><span class="p">(</span><span class="n">xvalues</span><span class="p">,</span> <span class="n">ychoice</span><span class="p">,</span> <span class="n">gchoice</span><span class="p">,</span> <span class="n">gvalues</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">gchoice</span> <span class="o">==</span> <span class="s1">&#39;PLZ&#39;</span><span class="p">:</span>
+                    <span class="c1"># Get orders and categories from database</span>
+                    <span class="n">orders</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getOrdersContainingZips</span><span class="p">(</span><span class="n">gvalues</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">])</span>
+                    <span class="n">products</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getArticlesByIds</span><span class="p">(</span><span class="n">xvalues</span><span class="p">)</span>
+                    <span class="n">product_to_name</span> <span class="o">=</span> <span class="p">{</span><span class="n">product</span><span class="p">[</span><span class="s1">&#39;Id&#39;</span><span class="p">]:</span> <span class="n">product</span><span class="p">[</span><span class="s1">&#39;Title&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;Text&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">product</span> <span class="ow">in</span> <span class="n">products</span><span class="p">}</span>
+
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">gvalues</span><span class="p">:</span>
+                        <span class="n">gvalues</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)]</span>
+
+                    <span class="nb">type</span> <span class="o">=</span> <span class="n">div_tree</span><span class="p">[</span><span class="n">xchoice</span><span class="p">][</span><span class="n">ychoice</span><span class="p">][</span><span class="n">gchoice</span><span class="p">][</span><span class="s1">&#39;type&#39;</span><span class="p">]</span>
+                    <span class="n">zipdict</span> <span class="o">=</span> <span class="p">{}</span>
+
+                    <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">gvalues</span><span class="p">:</span>
+                        <span class="n">zipdict</span><span class="p">[</span><span class="n">value</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                            <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                            <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span>
+                            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">value</span>
+                        <span class="p">}</span>
+
+                    <span class="c1"># TODO: swap out into function</span>
+                    <span class="c1"># For each zip, accumulate the revenue in total or per day</span>
+                    <span class="k">for</span> <span class="n">order</span> <span class="ow">in</span> <span class="n">orders</span><span class="p">:</span>
+                        <span class="c1"># TODO: replace try/except by appropriate article id filter in getOrdersContainingZips(...)</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">zipdict</span><span class="p">:</span>
+                                <span class="k">if</span> <span class="n">order</span><span class="p">[</span><span class="s1">&#39;Zip&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+                                    <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">zipdict</span><span class="p">[</span><span class="n">value</span><span class="p">][</span><span class="s1">&#39;x&#39;</span><span class="p">]):</span>
+                                        <span class="n">zipdict</span><span class="p">[</span><span class="n">value</span><span class="p">][</span><span class="s1">&#39;x&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">product_to_name</span><span class="p">[</span><span class="n">order</span><span class="p">[</span><span class="s1">&#39;ArticleId&#39;</span><span class="p">]])</span>
+
+                                        <span class="k">if</span> <span class="n">ychoice</span> <span class="o">==</span> <span class="s1">&#39;BAN&#39;</span><span class="p">:</span>
+                                            <span class="n">zipdict</span><span class="p">[</span><span class="n">value</span><span class="p">][</span><span class="s1">&#39;y&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                                        <span class="k">elif</span> <span class="n">ychoice</span> <span class="o">==</span> <span class="s1">&#39;UMS&#39;</span><span class="p">:</span>
+                                            <span class="n">zipdict</span><span class="p">[</span><span class="n">value</span><span class="p">][</span><span class="s1">&#39;y&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">order</span><span class="p">[</span><span class="s1">&#39;Price&#39;</span><span class="p">])</span>
+                                    <span class="k">elif</span> <span class="n">zipdict</span><span class="p">[</span><span class="n">value</span><span class="p">][</span><span class="s1">&#39;x&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">product_to_name</span><span class="p">[</span><span class="n">order</span><span class="p">[</span><span class="s1">&#39;ArticleId&#39;</span><span class="p">]]:</span>
+                                        <span class="n">zipdict</span><span class="p">[</span><span class="n">value</span><span class="p">][</span><span class="s1">&#39;x&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">product_to_name</span><span class="p">[</span><span class="n">order</span><span class="p">[</span><span class="s1">&#39;ArticleId&#39;</span><span class="p">]])</span>
+
+                                        <span class="c1"># Accumulate in total</span>
+                                        <span class="k">if</span> <span class="n">ychoice</span> <span class="o">==</span> <span class="s1">&#39;UMS&#39;</span><span class="p">:</span>
+                                            <span class="n">zipdict</span><span class="p">[</span><span class="n">value</span><span class="p">][</span><span class="s1">&#39;y&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">order</span><span class="p">[</span><span class="s1">&#39;Price&#39;</span><span class="p">])</span>
+                                        <span class="k">elif</span> <span class="n">ychoice</span> <span class="o">==</span> <span class="s1">&#39;BAN&#39;</span><span class="p">:</span>
+                                            <span class="n">zipdict</span><span class="p">[</span><span class="n">value</span><span class="p">][</span><span class="s1">&#39;y&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                                    <span class="k">else</span><span class="p">:</span>
+                                        <span class="k">if</span> <span class="n">ychoice</span> <span class="o">==</span> <span class="s1">&#39;BAN&#39;</span><span class="p">:</span>
+                                            <span class="n">zipdict</span><span class="p">[</span><span class="n">value</span><span class="p">][</span><span class="s1">&#39;y&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                                        <span class="k">elif</span> <span class="n">ychoice</span> <span class="o">==</span> <span class="s1">&#39;UMS&#39;</span><span class="p">:</span>
+                                            <span class="n">zipdict</span><span class="p">[</span><span class="n">value</span><span class="p">][</span><span class="s1">&#39;y&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">order</span><span class="p">[</span><span class="s1">&#39;Price&#39;</span><span class="p">]</span>
+                        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                            <span class="k">continue</span>
+
+                    <span class="c1"># Convert to pie chart</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">zipdict</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">xvalues</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">div_tree</span><span class="p">[</span><span class="n">xchoice</span><span class="p">][</span><span class="n">ychoice</span><span class="p">][</span><span class="n">gchoice</span><span class="p">][</span><span class="s1">&#39;type&#39;</span><span class="p">]</span>
+                        <span class="n">zipdict</span><span class="p">[</span><span class="n">value</span><span class="p">][</span><span class="s1">&#39;labels&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">zipdict</span><span class="p">[</span><span class="n">value</span><span class="p">][</span><span class="s1">&#39;x&#39;</span><span class="p">]</span>
+                        <span class="n">zipdict</span><span class="p">[</span><span class="n">value</span><span class="p">][</span><span class="s1">&#39;values&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">zipdict</span><span class="p">[</span><span class="n">value</span><span class="p">][</span><span class="s1">&#39;y&#39;</span><span class="p">]</span>
+                        <span class="n">zipdict</span><span class="p">[</span><span class="n">value</span><span class="p">][</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;pie&#39;</span>
+                        <span class="k">del</span> <span class="n">zipdict</span><span class="p">[</span><span class="n">value</span><span class="p">][</span><span class="s1">&#39;x&#39;</span><span class="p">]</span>
+                        <span class="k">del</span> <span class="n">zipdict</span><span class="p">[</span><span class="n">value</span><span class="p">][</span><span class="s1">&#39;y&#39;</span><span class="p">]</span>
+
+                    <span class="n">result</span> <span class="o">=</span> <span class="p">[</span><span class="n">zipdict</span><span class="p">[</span><span class="n">val</span><span class="p">]</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">zipdict</span><span class="p">]</span>
+
+            <span class="k">elif</span> <span class="n">ychoice</span> <span class="o">==</span> <span class="s1">&#39;KAN&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">gchoice</span> <span class="o">==</span> <span class="s1">&#39;SHO&#39;</span><span class="p">:</span>
+                    <span class="n">orders</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getOrdersMultiFilter</span><span class="p">(</span><span class="n">articles</span><span class="o">=</span><span class="n">xvalues</span><span class="p">,</span> <span class="n">shops</span><span class="o">=</span><span class="n">gvalues</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;s&#39;</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">])</span>
+                    <span class="n">items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getShopsByIds</span><span class="p">(</span><span class="n">gvalues</span><span class="p">)</span>
+                    <span class="n">item_to_name</span> <span class="o">=</span> <span class="p">{</span><span class="n">shop</span><span class="p">[</span><span class="s1">&#39;BillbeeShopId&#39;</span><span class="p">]:</span> <span class="n">shop</span><span class="p">[</span><span class="s1">&#39;BillbeeShopName&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">shop</span> <span class="ow">in</span> <span class="n">items</span><span class="p">}</span>
+                <span class="k">elif</span> <span class="n">gchoice</span> <span class="o">==</span> <span class="s1">&#39;ALL&#39;</span><span class="p">:</span>
+                    <span class="n">orders</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getOrdersMultiFilter</span><span class="p">(</span><span class="n">articles</span><span class="o">=</span><span class="n">xvalues</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>  <span class="c1"># TODO: PostLeitZahl</span>
+                    <span class="k">return</span> <span class="n">result</span>
+
+                <span class="n">products</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getArticlesByIds</span><span class="p">(</span><span class="n">xvalues</span><span class="p">)</span>
+                <span class="n">product_to_name</span> <span class="o">=</span> <span class="p">{</span><span class="n">product</span><span class="p">[</span><span class="s1">&#39;Id&#39;</span><span class="p">]:</span> <span class="n">product</span><span class="p">[</span><span class="s1">&#39;Title&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;Text&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">product</span> <span class="ow">in</span> <span class="n">products</span><span class="p">}</span>
+                <span class="nb">type</span> <span class="o">=</span> <span class="n">div_tree</span><span class="p">[</span><span class="n">xchoice</span><span class="p">][</span><span class="n">ychoice</span><span class="p">][</span><span class="n">gchoice</span><span class="p">][</span><span class="s1">&#39;type&#39;</span><span class="p">]</span>
+                <span class="n">xvals</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">yvals</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">lastshop</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+                <span class="n">lastarticle</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+                <span class="n">lastcustomer</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+                <span class="k">for</span> <span class="n">order</span> <span class="ow">in</span> <span class="n">orders</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">gchoice</span> <span class="o">!=</span> <span class="s1">&#39;ALL&#39;</span> <span class="ow">and</span> <span class="n">lastshop</span> <span class="o">!=</span> <span class="n">order</span><span class="p">[</span><span class="s1">&#39;ShopId&#39;</span><span class="p">]:</span>
+                        <span class="k">if</span> <span class="n">xvals</span> <span class="ow">and</span> <span class="n">yvals</span><span class="p">:</span>
+                            <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                                <span class="s1">&#39;labels&#39;</span> <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s1">&#39;pie&#39;</span> <span class="k">else</span> <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">xvals</span><span class="p">,</span>
+                                <span class="s1">&#39;values&#39;</span> <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s1">&#39;pie&#39;</span> <span class="k">else</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">yvals</span><span class="p">,</span>
+                                <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span>
+                                <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">item_to_name</span><span class="p">[</span><span class="n">lastshop</span><span class="p">]</span>
+                            <span class="p">})</span>
+                            <span class="n">xvals</span> <span class="o">=</span> <span class="p">[]</span>
+                            <span class="n">yvals</span> <span class="o">=</span> <span class="p">[]</span>
+
+                        <span class="n">lastshop</span> <span class="o">=</span> <span class="n">order</span><span class="p">[</span><span class="s1">&#39;ShopId&#39;</span><span class="p">]</span>
+
+                    <span class="k">if</span> <span class="n">lastarticle</span> <span class="o">!=</span> <span class="n">order</span><span class="p">[</span><span class="s1">&#39;ArticleId&#39;</span><span class="p">]:</span>
+                        <span class="n">lastarticle</span> <span class="o">=</span> <span class="n">order</span><span class="p">[</span><span class="s1">&#39;ArticleId&#39;</span><span class="p">]</span>
+                        <span class="n">lastcustomer</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+                        <span class="n">xvals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">product_to_name</span><span class="p">[</span><span class="n">lastarticle</span><span class="p">])</span>
+                        <span class="n">yvals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+                    <span class="k">if</span> <span class="n">lastcustomer</span> <span class="o">!=</span> <span class="n">order</span><span class="p">[</span><span class="s1">&#39;CustomerId&#39;</span><span class="p">]:</span>
+                        <span class="n">lastcustomer</span> <span class="o">=</span> <span class="n">order</span><span class="p">[</span><span class="s1">&#39;CustomerId&#39;</span><span class="p">]</span>
+                        <span class="n">yvals</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+                <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                    <span class="s1">&#39;labels&#39;</span> <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s1">&#39;pie&#39;</span> <span class="k">else</span> <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">xvals</span><span class="p">,</span>
+                    <span class="s1">&#39;values&#39;</span> <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s1">&#39;pie&#39;</span> <span class="k">else</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">yvals</span><span class="p">,</span>
+                    <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span>
+                    <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;ALL&#39;</span> <span class="k">if</span> <span class="n">gchoice</span> <span class="o">==</span> <span class="s1">&#39;ALL&#39;</span> <span class="k">else</span> <span class="n">item_to_name</span><span class="p">[</span><span class="n">lastshop</span><span class="p">]</span>
+                <span class="p">})</span>
+
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">xvalues</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">type</span> <span class="o">!=</span> <span class="s1">&#39;pie&#39;</span><span class="p">:</span>
+                    <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;labels&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;x&#39;</span><span class="p">]</span>
+                    <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;values&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;y&#39;</span><span class="p">]</span>
+                    <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;pie&#39;</span>
+                    <span class="k">del</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;x&#39;</span><span class="p">]</span>
+                    <span class="k">del</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;y&#39;</span><span class="p">]</span>
+
+        <span class="k">elif</span> <span class="n">xchoice</span> <span class="o">==</span> <span class="s1">&#39;SHO&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ychoice</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;UMS&#39;</span><span class="p">,</span> <span class="s1">&#39;BAN&#39;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">gchoice</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;PRO&#39;</span><span class="p">,</span> <span class="s1">&#39;KUN&#39;</span><span class="p">,</span> <span class="s1">&#39;ALL&#39;</span><span class="p">,</span> <span class="s1">&#39;TAG&#39;</span><span class="p">,</span> <span class="s1">&#39;KAT&#39;</span><span class="p">]:</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sho</span><span class="p">(</span><span class="n">xvalues</span><span class="p">,</span> <span class="n">ychoice</span><span class="p">,</span> <span class="n">gchoice</span><span class="p">,</span> <span class="n">gvalues</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">ychoice</span> <span class="o">==</span> <span class="s1">&#39;KAN&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">gchoice</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;PRO&#39;</span><span class="p">,</span> <span class="s1">&#39;ALL&#39;</span><span class="p">,</span> <span class="s1">&#39;TAG&#39;</span><span class="p">,</span> <span class="s1">&#39;KAT&#39;</span><span class="p">]:</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sho</span><span class="p">(</span><span class="n">xvalues</span><span class="p">,</span> <span class="n">ychoice</span><span class="p">,</span> <span class="n">gchoice</span><span class="p">,</span> <span class="n">gvalues</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">result</span></div></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s1">&#39;Statistics.log&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">,</span>
+                        <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;[</span><span class="si">%(name)s</span><span class="s1">] </span><span class="si">%(asctime)s</span><span class="s1"> - </span><span class="si">%(levelname)s</span><span class="s1"> - </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">stat</span> <span class="o">=</span> <span class="n">Statistics</span><span class="p">()</span>
+    <span class="c1"># print(stat.evaluate(&#39;ZIN&#39;, [], &#39;UMS&#39;, [], &#39;&#39;))</span>
+</pre></div>
+
+           </div>
+
+          </div>
+          <footer>
+
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Harald Heckmann, Thorsten Knoll
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+
+
+
+
+
+</body>
+</html>

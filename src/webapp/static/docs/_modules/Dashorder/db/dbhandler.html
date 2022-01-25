@@ -1,0 +1,1123 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Dashorder.db.dbhandler &mdash; Dashorder 0.0.post0.dev217+gbd9aeab.dirty documentation</title>
+
+
+
+
+
+
+
+
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+
+
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+
+
+
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+</head>
+
+<body class="wy-body-for-nav">
+
+
+  <div class="wy-grid-for-nav">
+
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+
+
+            <a href="../../../index.html" class="icon icon-home"> Dashorder
+
+
+
+          </a>
+
+
+
+
+              <div class="version">
+                0.0.post0.dev217+gbd9aeab.dirty
+              </div>
+
+
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+
+
+
+
+
+
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authors.html">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/modules.html">Module Reference</a></li>
+</ul>
+
+
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+
+      <nav class="wy-nav-top" aria-label="top navigation">
+
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Dashorder</a>
+
+      </nav>
+
+
+      <div class="wy-nav-content">
+
+        <div class="rst-content">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+
+      <li>Dashorder.db.dbhandler</li>
+
+
+      <li class="wy-breadcrumbs-aside">
+
+      </li>
+
+  </ul>
+
+
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <h1>Source code for Dashorder.db.dbhandler</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">json</span> <span class="k">import</span> <span class="n">load</span> <span class="k">as</span> <span class="n">jload</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="k">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span> <span class="nn">bson.objectid</span> <span class="k">import</span> <span class="n">ObjectId</span>
+<span class="kn">from</span> <span class="nn">pymongo</span> <span class="k">import</span> <span class="n">ASCENDING</span><span class="p">,</span> <span class="n">DESCENDING</span><span class="p">,</span> <span class="n">MongoClient</span><span class="p">,</span> <span class="n">UpdateOne</span>
+<span class="kn">from</span> <span class="nn">pymongo.collation</span> <span class="k">import</span> <span class="n">Collation</span>
+<span class="kn">from</span> <span class="nn">pymongo.collection</span> <span class="k">import</span> <span class="n">ReturnDocument</span>
+<span class="kn">from</span> <span class="nn">pymongo.errors</span> <span class="k">import</span> <span class="n">OperationFailure</span>
+<span class="kn">from</span> <span class="nn">pymongo.operations</span> <span class="k">import</span> <span class="n">IndexModel</span>
+<span class="kn">from</span> <span class="nn">pymongo.results</span> <span class="k">import</span> <span class="n">BulkWriteResult</span>
+
+<span class="kn">from</span> <span class="nn">.dbinterface</span> <span class="k">import</span> <span class="n">AbstractDBHandler</span>
+
+<span class="n">PYMONGO_AUTHENTICATION_ERROR</span> <span class="o">=</span> <span class="mi">18</span>
+
+
+<div class="viewcode-block" id="DBHandler"><a class="viewcode-back" href="../../../api/Dashorder.db.html#Dashorder.db.dbhandler.DBHandler">[docs]</a><span class="k">class</span> <span class="nc">DBHandler</span><span class="p">(</span><span class="n">AbstractDBHandler</span><span class="p">):</span>
+    <span class="c1"># TODO: Completed slots</span>
+    <span class="n">slots</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;__weakref__&#39;</span><span class="p">,</span> <span class="s1">&#39;_db&#39;</span><span class="p">,</span> <span class="s1">&#39;_keys&#39;</span><span class="p">,</span> <span class="s1">&#39;article_template&#39;</span><span class="p">,</span> <span class="s1">&#39;customer_template&#39;</span><span class="p">,</span>
+             <span class="s1">&#39;order_template&#39;</span><span class="p">,</span> <span class="s1">&#39;getLatestOrderId&#39;</span><span class="p">,</span> <span class="s1">&#39;getLatestArticleId&#39;</span><span class="p">,</span> <span class="s1">&#39;getLatestCustomerId&#39;</span><span class="p">,</span>
+             <span class="s1">&#39;getArticles&#39;</span><span class="p">,</span> <span class="s1">&#39;getShops&#39;</span><span class="p">,</span> <span class="s1">&#39;getTags&#39;</span><span class="p">,</span> <span class="s1">&#39;getCategories&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">ip</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">port</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">dbname</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;maldaner&#39;</span><span class="p">,</span>
+                 <span class="n">article_template</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">customer_template</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">order_template</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Configure logging module name</span>
+        <span class="c1"># logging.setLogger(self.__class__.__name__)</span>
+
+        <span class="c1"># Construct connection uri</span>
+
+        <span class="n">connection_data</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">if</span> <span class="n">ip</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">connection_data</span><span class="p">[</span><span class="s1">&#39;host&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ip</span>
+            <span class="n">connection_data</span><span class="p">[</span><span class="s1">&#39;port&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">27017</span>
+
+        <span class="k">if</span> <span class="n">port</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">connection_data</span><span class="p">[</span><span class="s1">&#39;port&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">port</span>
+
+        <span class="k">if</span> <span class="n">username</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">connection_data</span><span class="p">[</span><span class="s1">&#39;username&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">username</span>
+            <span class="n">connection_data</span><span class="p">[</span><span class="s1">&#39;password&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="n">connection_data</span><span class="p">[</span><span class="s1">&#39;authSource&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dbname</span>
+
+        <span class="k">if</span> <span class="n">password</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">connection_data</span><span class="p">[</span><span class="s1">&#39;password&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">password</span>
+
+        <span class="c1"># If connect uri is empty, use autodiscover</span>
+        <span class="k">if</span> <span class="n">connection_data</span><span class="p">:</span>
+            <span class="n">ip</span> <span class="o">=</span> <span class="n">connection_data</span><span class="p">[</span><span class="s1">&#39;host&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;host&#39;</span> <span class="ow">in</span> <span class="n">connection_data</span> <span class="k">else</span> <span class="s1">&#39;localhost&#39;</span>
+            <span class="n">port</span> <span class="o">=</span> <span class="n">connection_data</span><span class="p">[</span><span class="s1">&#39;port&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;port&#39;</span> <span class="ow">in</span> <span class="n">connection_data</span> <span class="k">else</span> <span class="mi">27017</span>
+
+            <span class="k">if</span> <span class="s1">&#39;username&#39;</span> <span class="ow">in</span> <span class="n">connection_data</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Using MongoDB user </span><span class="si">{}</span><span class="s1"> for database </span><span class="si">{}</span><span class="s1">&#39;</span>
+                              <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">connection_data</span><span class="p">[</span><span class="s1">&#39;username&#39;</span><span class="p">],</span> <span class="n">connection_data</span><span class="p">[</span><span class="s1">&#39;authSource&#39;</span><span class="p">]))</span>
+
+            <span class="n">mongo</span> <span class="o">=</span> <span class="n">MongoClient</span><span class="p">(</span><span class="o">**</span><span class="n">connection_data</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;MongoDB connected to </span><span class="si">{}</span><span class="s1">:</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ip</span><span class="p">,</span> <span class="n">port</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mongo</span> <span class="o">=</span> <span class="n">MongoClient</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_db</span> <span class="o">=</span> <span class="n">mongo</span><span class="p">[</span><span class="n">dbname</span><span class="p">]</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Connected to database &quot;</span><span class="si">{}</span><span class="s1">&quot; @ &quot;</span><span class="si">{}</span><span class="s1">&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dbname</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">mongo</span><span class="o">.</span><span class="n">address</span><span class="p">)))</span>
+
+        <span class="c1"># Load JSON data templates (specifies relevant keys from BillBee requests)</span>
+        <span class="n">base_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">customer_template</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">customer_template</span> <span class="o">=</span> <span class="p">(</span><span class="n">base_path</span> <span class="o">/</span> <span class="s1">&#39;../config/customer.json&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">customer_template</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">customer</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">customer_template</span> <span class="o">=</span> <span class="n">jload</span><span class="p">(</span><span class="n">customer</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">article_template</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">article_template</span> <span class="o">=</span> <span class="p">(</span><span class="n">base_path</span> <span class="o">/</span> <span class="s1">&#39;../config/article.json&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">article_template</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">article</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">article_template</span> <span class="o">=</span> <span class="n">jload</span><span class="p">(</span><span class="n">article</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">order_template</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">order_template</span> <span class="o">=</span> <span class="p">(</span><span class="n">base_path</span> <span class="o">/</span> <span class="s1">&#39;../config/order.json&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">order_template</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">order</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">order_template</span> <span class="o">=</span> <span class="n">jload</span><span class="p">(</span><span class="n">order</span><span class="p">)</span>
+
+        <span class="c1"># Variables that will contain a unique key name for each collection</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Initialize Collections (if not done yet)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_initCollections</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">OperationFailure</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">code</span> <span class="o">==</span> <span class="n">PYMONGO_AUTHENTICATION_ERROR</span><span class="p">:</span>
+                <span class="c1"># Authentication failed? Retry without authentication</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Authentication for user &quot;</span><span class="si">{}</span><span class="s1">&quot; failed, retrying without authentication&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">username</span><span class="p">))</span>
+                <span class="n">mongo</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="k">del</span> <span class="n">connection_data</span><span class="p">[</span><span class="s1">&#39;username&#39;</span><span class="p">]</span>
+                <span class="k">del</span> <span class="n">connection_data</span><span class="p">[</span><span class="s1">&#39;password&#39;</span><span class="p">]</span>
+                <span class="k">del</span> <span class="n">connection_data</span><span class="p">[</span><span class="s1">&#39;authSource&#39;</span><span class="p">]</span>
+                <span class="n">mongo</span> <span class="o">=</span> <span class="n">MongoClient</span><span class="p">(</span><span class="o">**</span><span class="n">connection_data</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_db</span> <span class="o">=</span> <span class="n">mongo</span><span class="p">[</span><span class="n">dbname</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_initCollections</span><span class="p">()</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Database successfully initialized&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__initCollection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># If a Collation is specified, use it</span>
+        <span class="k">if</span> <span class="s1">&#39;Collation&#39;</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
+            <span class="n">collation</span> <span class="o">=</span> <span class="n">Collation</span><span class="p">(</span><span class="o">**</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;Collation&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">create_collection</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">collation</span><span class="o">=</span><span class="n">collation</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Created Collation for &quot;</span><span class="si">{}</span><span class="s1">&quot; collection: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">collation</span><span class="p">)))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">create_collection</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="c1"># Create indices</span>
+        <span class="k">if</span> <span class="s1">&#39;Indices&#39;</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
+            <span class="n">indices</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;Indices&#39;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="s1">&#39;Options&#39;</span> <span class="ow">in</span> <span class="n">index</span><span class="p">:</span>
+                    <span class="n">collation</span> <span class="o">=</span> <span class="kc">None</span>
+
+                    <span class="k">if</span> <span class="s1">&#39;Collation&#39;</span> <span class="ow">in</span> <span class="n">index</span><span class="p">[</span><span class="s1">&#39;Options&#39;</span><span class="p">]:</span>
+                        <span class="n">collation</span> <span class="o">=</span> <span class="n">Collation</span><span class="p">(</span><span class="o">**</span><span class="n">index</span><span class="p">[</span><span class="s1">&#39;Options&#39;</span><span class="p">][</span><span class="s1">&#39;Collation&#39;</span><span class="p">])</span>
+                        <span class="k">del</span> <span class="n">index</span><span class="p">[</span><span class="s1">&#39;Options&#39;</span><span class="p">][</span><span class="s1">&#39;Collation&#39;</span><span class="p">]</span>
+                        <span class="n">model</span> <span class="o">=</span> <span class="n">IndexModel</span><span class="p">(</span><span class="n">index</span><span class="p">[</span><span class="s1">&#39;Name&#39;</span><span class="p">],</span> <span class="o">**</span><span class="n">index</span><span class="p">[</span><span class="s1">&#39;Options&#39;</span><span class="p">],</span>
+                                           <span class="n">collation</span><span class="o">=</span><span class="n">collation</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">model</span> <span class="o">=</span> <span class="n">IndexModel</span><span class="p">(</span><span class="n">index</span><span class="p">[</span><span class="s1">&#39;Name&#39;</span><span class="p">],</span> <span class="o">**</span><span class="n">index</span><span class="p">[</span><span class="s1">&#39;Options&#39;</span><span class="p">])</span>
+
+                    <span class="c1"># Store the name of one unique key</span>
+                    <span class="k">if</span> <span class="s1">&#39;unique&#39;</span> <span class="ow">in</span> <span class="n">index</span><span class="p">[</span><span class="s1">&#39;Options&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">index</span><span class="p">[</span><span class="s1">&#39;Name&#39;</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">model</span> <span class="o">=</span> <span class="n">IndexModel</span><span class="p">(</span><span class="n">index</span><span class="p">[</span><span class="s1">&#39;Name&#39;</span><span class="p">])</span>
+
+                <span class="n">indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Created IndexModel for &quot;</span><span class="si">{}</span><span class="s1">&quot; collection: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                              <span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">document</span><span class="p">)))</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">create_indexes</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Indices for &quot;</span><span class="si">{}</span><span class="s1">&quot; collection updated&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39; collection created and configured&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__addKey</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">collection_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="p">[</span><span class="n">collection_name</span><span class="p">]</span><span class="o">.</span><span class="n">index_information</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="p">[</span><span class="n">collection_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">indices</span><span class="p">[</span><span class="n">indices</span><span class="o">.</span><span class="n">keys</span><span class="p">()[</span><span class="mi">0</span><span class="p">]][</span><span class="s1">&#39;key&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">indices</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="mi">1</span><span class="p">:]:</span>
+                <span class="k">if</span> <span class="s1">&#39;unique&#39;</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">and</span> <span class="n">indices</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;unique&#39;</span><span class="p">]:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="p">[</span><span class="n">collection_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">indices</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;key&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="k">return</span>
+
+    <span class="k">def</span> <span class="nf">_initCollections</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Create collections if not existant yet</span>
+        <span class="n">collection_names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">list_collection_names</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="s1">&#39;customers&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">collection_names</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__initCollection</span><span class="p">(</span><span class="s1">&#39;customers&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">customer_template</span><span class="p">[</span><span class="s1">&#39;DashOrderConfiguration&#39;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__addKey</span><span class="p">(</span><span class="s1">&#39;customers&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s1">&#39;orders&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">collection_names</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__initCollection</span><span class="p">(</span><span class="s1">&#39;orders&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">order_template</span><span class="p">[</span><span class="s1">&#39;DashOrderConfiguration&#39;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__addKey</span><span class="p">(</span><span class="s1">&#39;orders&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s1">&#39;articles&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">collection_names</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__initCollection</span><span class="p">(</span><span class="s1">&#39;articles&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">article_template</span><span class="p">[</span><span class="s1">&#39;DashOrderConfiguration&#39;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__addKey</span><span class="p">(</span><span class="s1">&#39;articles&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s1">&#39;Seller&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">order_template</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s1">&#39;sellers&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">collection_names</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">create_collection</span><span class="p">(</span><span class="s1">&#39;sellers&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">sellers</span><span class="o">.</span><span class="n">create_index</span><span class="p">(</span><span class="s1">&#39;BillbeeShopId&#39;</span><span class="p">,</span> <span class="n">unique</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="p">[</span><span class="s1">&#39;sellers&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;BillbeeShopId&#39;</span>
+
+        <span class="k">if</span> <span class="s1">&#39;Category1&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">article_template</span> <span class="ow">or</span> <span class="s1">&#39;Category2&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">article_template</span>\
+           <span class="ow">or</span> <span class="s1">&#39;Category3&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">article_template</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s1">&#39;categories&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">collection_names</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">create_collection</span><span class="p">(</span><span class="s1">&#39;categories&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">categories</span><span class="o">.</span><span class="n">create_index</span><span class="p">(</span><span class="s1">&#39;Id&#39;</span><span class="p">,</span> <span class="n">unique</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="p">[</span><span class="s1">&#39;categories&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Id&#39;</span>
+
+        <span class="k">if</span> <span class="s1">&#39;Tags&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">article_template</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s1">&#39;tags&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">collection_names</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">create_collection</span><span class="p">(</span><span class="s1">&#39;tags&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">create_index</span><span class="p">(</span><span class="s1">&#39;Name&#39;</span><span class="p">,</span> <span class="n">unique</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="p">[</span><span class="s1">&#39;tags&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;_id&#39;</span>
+
+        <span class="c1"># Remove DashOrder config from data models</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">customer_template</span><span class="p">[</span><span class="s1">&#39;DashOrderConfiguration&#39;</span><span class="p">]</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">order_template</span><span class="p">[</span><span class="s1">&#39;DashOrderConfiguration&#39;</span><span class="p">]</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">article_template</span><span class="p">[</span><span class="s1">&#39;DashOrderConfiguration&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__filterData</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">template</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">result</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">elem</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">({})</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__filterData</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="n">template</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">result</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">entry_key</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">entry_key</span> <span class="ow">in</span> <span class="n">template</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">entry_key</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>
+                        <span class="n">result</span><span class="p">[</span><span class="n">entry_key</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__filterData</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">entry_key</span><span class="p">],</span> <span class="n">template</span><span class="p">[</span><span class="n">entry_key</span><span class="p">],</span> <span class="n">result</span><span class="p">[</span><span class="n">entry_key</span><span class="p">])</span>
+                    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">entry_key</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+                        <span class="n">result</span><span class="p">[</span><span class="n">entry_key</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__filterData</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">entry_key</span><span class="p">],</span> <span class="n">template</span><span class="p">[</span><span class="n">entry_key</span><span class="p">],</span> <span class="n">result</span><span class="p">[</span><span class="n">entry_key</span><span class="p">])</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">result</span><span class="p">[</span><span class="n">entry_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">entry_key</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="k">def</span> <span class="nf">__bulkUpsert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">],</span> <span class="n">collection_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">unique_index</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BulkWriteResult</span><span class="p">:</span>
+        <span class="c1"># Prepare list for bulk upsert request</span>
+        <span class="n">bulk_data</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">UpdateOne</span><span class="p">(</span>
+                <span class="p">{</span><span class="n">unique_index</span><span class="p">:</span> <span class="n">entry</span><span class="p">[</span><span class="n">unique_index</span><span class="p">]},</span>
+                <span class="p">{</span><span class="s1">&#39;$setOnInsert&#39;</span><span class="p">:</span> <span class="n">entry</span><span class="p">},</span>
+                <span class="n">upsert</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">data</span>
+        <span class="p">]</span>
+        <span class="c1"># bulk_write the upsert data and log the result</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="p">[</span><span class="n">collection_name</span><span class="p">]</span><span class="o">.</span><span class="n">bulk_write</span><span class="p">(</span><span class="n">bulk_data</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Did</span><span class="si">{}</span><span class="s1">update collection &quot;</span><span class="si">{}</span><span class="s1">&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39; &#39;</span> <span class="k">if</span> <span class="n">result</span> <span class="k">else</span> <span class="s1">&#39; NOT &#39;</span><span class="p">,</span>
+                                                          <span class="n">collection_name</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+<div class="viewcode-block" id="DBHandler.updateCustomers"><a class="viewcode-back" href="../../../api/Dashorder.db.html#Dashorder.db.dbhandler.DBHandler.updateCustomers">[docs]</a>    <span class="k">def</span> <span class="nf">updateCustomers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">customers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">],</span> <span class="n">template</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">template</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">customer_template</span> <span class="k">if</span> <span class="n">template</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">template</span>
+        <span class="n">filtered_customers</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">__filterData</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">template</span><span class="p">)</span> <span class="k">for</span> <span class="n">dataset</span> <span class="ow">in</span> <span class="n">customers</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__bulkUpsert</span><span class="p">(</span><span class="n">filtered_customers</span><span class="p">,</span> <span class="s1">&#39;customers&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="p">[</span><span class="s1">&#39;customers&#39;</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="DBHandler.updateArticles"><a class="viewcode-back" href="../../../api/Dashorder.db.html#Dashorder.db.dbhandler.DBHandler.updateArticles">[docs]</a>    <span class="k">def</span> <span class="nf">updateArticles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">articles</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">],</span> <span class="n">template</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># TODO: Improve code</span>
+        <span class="n">template</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">article_template</span> <span class="k">if</span> <span class="n">template</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">template</span>
+        <span class="n">filtered_articles</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">__filterData</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">template</span><span class="p">)</span> <span class="k">for</span> <span class="n">dataset</span> <span class="ow">in</span> <span class="n">articles</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="s1">&#39;Category1&#39;</span> <span class="ow">in</span> <span class="n">template</span> <span class="ow">or</span> <span class="s1">&#39;Category2&#39;</span> <span class="ow">in</span> <span class="n">template</span> <span class="ow">or</span> <span class="s1">&#39;Category3&#39;</span> <span class="ow">in</span> <span class="n">template</span>\
+           <span class="ow">or</span> <span class="s1">&#39;Tags&#39;</span> <span class="ow">in</span> <span class="n">template</span><span class="p">:</span>
+            <span class="n">categories</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">for</span> <span class="n">dataset</span> <span class="ow">in</span> <span class="n">filtered_articles</span><span class="p">:</span>
+                <span class="n">category_ids</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">tags</span> <span class="o">=</span> <span class="p">[]</span>
+
+                <span class="k">if</span> <span class="s1">&#39;Category1&#39;</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;Category1&#39;</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>
+                        <span class="n">category_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;Category1&#39;</span><span class="p">][</span><span class="s1">&#39;Id&#39;</span><span class="p">])</span>
+                        <span class="n">categories</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;Category1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+
+                    <span class="k">del</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;Category1&#39;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="s1">&#39;Category2&#39;</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;Category2&#39;</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>
+                        <span class="n">category_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;Category2&#39;</span><span class="p">][</span><span class="s1">&#39;Id&#39;</span><span class="p">])</span>
+                        <span class="n">categories</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;Category2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+
+                    <span class="k">del</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;Category2&#39;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="s1">&#39;Category3&#39;</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;Category3&#39;</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>
+                        <span class="n">category_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;Category3&#39;</span><span class="p">][</span><span class="s1">&#39;Id&#39;</span><span class="p">])</span>
+                        <span class="n">categories</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;Category3&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+
+                    <span class="k">del</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;Category3&#39;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="s1">&#39;Tags&#39;</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;Tags&#39;</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+                        <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;Tags&#39;</span><span class="p">]:</span>
+                            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tag</span><span class="p">[</span><span class="s1">&#39;Text&#39;</span><span class="p">],</span> <span class="nb">str</span><span class="p">):</span>
+                                <span class="k">for</span> <span class="n">tagname</span> <span class="ow">in</span> <span class="n">tag</span><span class="p">[</span><span class="s1">&#39;Text&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;, &#39;</span><span class="p">):</span>
+                                    <span class="n">tags</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="n">tagname</span><span class="p">})</span>
+
+                    <span class="n">tag_ids</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
+                        <span class="n">tagdoc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">find_one_and_update</span><span class="p">(</span><span class="n">tag</span><span class="p">,</span> <span class="p">{</span>
+                            <span class="s1">&#39;$setOnInsert&#39;</span><span class="p">:</span> <span class="n">tag</span>
+                        <span class="p">},</span> <span class="n">upsert</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">return_document</span><span class="o">=</span><span class="n">ReturnDocument</span><span class="o">.</span><span class="n">AFTER</span><span class="p">)</span>
+                        <span class="n">tag_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tagdoc</span><span class="p">[</span><span class="s1">&#39;_id&#39;</span><span class="p">])</span>
+
+                <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;Tags&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tag_ids</span>
+                <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;Categories&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">category_ids</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">categories</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__bulkUpsert</span><span class="p">(</span><span class="n">categories</span><span class="p">,</span> <span class="s1">&#39;categories&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="p">[</span><span class="s1">&#39;categories&#39;</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">__bulkUpsert</span><span class="p">(</span><span class="n">filtered_articles</span><span class="p">,</span> <span class="s1">&#39;articles&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="p">[</span><span class="s1">&#39;articles&#39;</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="DBHandler.updateOrders"><a class="viewcode-back" href="../../../api/Dashorder.db.html#Dashorder.db.dbhandler.DBHandler.updateOrders">[docs]</a>    <span class="k">def</span> <span class="nf">updateOrders</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orders</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">],</span> <span class="n">template</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># TODO: Investigate why OrderItems.Product contains way more information than it should</span>
+        <span class="n">template</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">order_template</span> <span class="k">if</span> <span class="n">template</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">template</span>
+        <span class="n">filtered_orders</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">__filterData</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">template</span><span class="p">)</span> <span class="k">for</span> <span class="n">dataset</span> <span class="ow">in</span> <span class="n">orders</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="s1">&#39;Seller&#39;</span> <span class="ow">in</span> <span class="n">template</span> <span class="ow">or</span> <span class="s1">&#39;Customer&#39;</span> <span class="ow">in</span> <span class="n">template</span><span class="p">:</span>
+            <span class="n">sellers</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">for</span> <span class="n">dataset</span> <span class="ow">in</span> <span class="n">filtered_orders</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s1">&#39;Seller&#39;</span> <span class="ow">in</span> <span class="n">template</span><span class="p">:</span>
+                    <span class="n">sellers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;Seller&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+                    <span class="n">shopid_key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="p">[</span><span class="s1">&#39;sellers&#39;</span><span class="p">]</span>
+                    <span class="n">dataset</span><span class="p">[</span><span class="n">shopid_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;Seller&#39;</span><span class="p">][</span><span class="n">shopid_key</span><span class="p">]</span>
+                    <span class="k">del</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;Seller&#39;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="s1">&#39;Customer&#39;</span> <span class="ow">in</span> <span class="n">template</span><span class="p">:</span>
+                    <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;Customer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;Customer&#39;</span><span class="p">][</span><span class="s1">&#39;Id&#39;</span><span class="p">]</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">__bulkUpsert</span><span class="p">(</span><span class="n">sellers</span><span class="p">,</span> <span class="s1">&#39;sellers&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="p">[</span><span class="s1">&#39;sellers&#39;</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">__bulkUpsert</span><span class="p">(</span><span class="n">filtered_orders</span><span class="p">,</span> <span class="s1">&#39;orders&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="p">[</span><span class="s1">&#39;orders&#39;</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="DBHandler.getLatestArticleId"><a class="viewcode-back" href="../../../api/Dashorder.db.html#Dashorder.db.dbhandler.DBHandler.getLatestArticleId">[docs]</a>    <span class="k">def</span> <span class="nf">getLatestArticleId</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="p">[</span><span class="s1">&#39;articles&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">articles</span><span class="o">.</span><span class="n">find_one</span><span class="p">(</span><span class="n">sort</span><span class="o">=</span><span class="p">[(</span><span class="n">key</span><span class="p">,</span> <span class="n">DESCENDING</span><span class="p">)])[</span><span class="n">key</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="DBHandler.getLatestOrderId"><a class="viewcode-back" href="../../../api/Dashorder.db.html#Dashorder.db.dbhandler.DBHandler.getLatestOrderId">[docs]</a>    <span class="k">def</span> <span class="nf">getLatestOrderId</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="p">[</span><span class="s1">&#39;orders&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">orders</span><span class="o">.</span><span class="n">find_one</span><span class="p">(</span><span class="n">sort</span><span class="o">=</span><span class="p">[(</span><span class="n">key</span><span class="p">,</span> <span class="n">DESCENDING</span><span class="p">)])[</span><span class="n">key</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="DBHandler.getLatestCustomerId"><a class="viewcode-back" href="../../../api/Dashorder.db.html#Dashorder.db.dbhandler.DBHandler.getLatestCustomerId">[docs]</a>    <span class="k">def</span> <span class="nf">getLatestCustomerId</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="p">[</span><span class="s1">&#39;customers&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">customers</span><span class="o">.</span><span class="n">find_one</span><span class="p">(</span><span class="n">sort</span><span class="o">=</span><span class="p">[(</span><span class="n">key</span><span class="p">,</span> <span class="n">DESCENDING</span><span class="p">)])[</span><span class="n">key</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="DBHandler.getArticles"><a class="viewcode-back" href="../../../api/Dashorder.db.html#Dashorder.db.dbhandler.DBHandler.getArticles">[docs]</a>    <span class="k">def</span> <span class="nf">getArticles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">namekey</span><span class="o">=</span><span class="s1">&#39;label&#39;</span><span class="p">,</span> <span class="n">idkey</span><span class="o">=</span><span class="s1">&#39;value&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">articles</span><span class="o">.</span><span class="n">find</span><span class="p">({})</span>
+        <span class="k">return</span> <span class="p">[{</span><span class="n">idkey</span><span class="p">:</span> <span class="n">article</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="p">[</span><span class="s1">&#39;articles&#39;</span><span class="p">]],</span> <span class="n">namekey</span><span class="p">:</span> <span class="n">article</span><span class="p">[</span><span class="s1">&#39;Title&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;Text&#39;</span><span class="p">]}</span>
+                <span class="k">for</span> <span class="n">article</span> <span class="ow">in</span> <span class="n">result</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="DBHandler.getShops"><a class="viewcode-back" href="../../../api/Dashorder.db.html#Dashorder.db.dbhandler.DBHandler.getShops">[docs]</a>    <span class="k">def</span> <span class="nf">getShops</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">namekey</span><span class="o">=</span><span class="s1">&#39;label&#39;</span><span class="p">,</span> <span class="n">idkey</span><span class="o">=</span><span class="s1">&#39;value&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">sellers</span><span class="o">.</span><span class="n">find</span><span class="p">({})</span>
+        <span class="k">return</span> <span class="p">[{</span><span class="n">idkey</span><span class="p">:</span> <span class="n">shop</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="p">[</span><span class="s1">&#39;sellers&#39;</span><span class="p">]],</span> <span class="n">namekey</span><span class="p">:</span> <span class="n">shop</span><span class="p">[</span><span class="s1">&#39;BillbeeShopName&#39;</span><span class="p">]}</span>
+                <span class="k">for</span> <span class="n">shop</span> <span class="ow">in</span> <span class="n">result</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="DBHandler.getTags"><a class="viewcode-back" href="../../../api/Dashorder.db.html#Dashorder.db.dbhandler.DBHandler.getTags">[docs]</a>    <span class="k">def</span> <span class="nf">getTags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">namekey</span><span class="o">=</span><span class="s1">&#39;label&#39;</span><span class="p">,</span> <span class="n">idkey</span><span class="o">=</span><span class="s1">&#39;value&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">find</span><span class="p">({})</span>
+        <span class="k">return</span> <span class="p">[{</span><span class="n">idkey</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">tag</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="p">[</span><span class="s1">&#39;tags&#39;</span><span class="p">]]),</span> <span class="n">namekey</span><span class="p">:</span> <span class="n">tag</span><span class="p">[</span><span class="s1">&#39;Name&#39;</span><span class="p">]}</span>
+                <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">result</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="DBHandler.getCategories"><a class="viewcode-back" href="../../../api/Dashorder.db.html#Dashorder.db.dbhandler.DBHandler.getCategories">[docs]</a>    <span class="k">def</span> <span class="nf">getCategories</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">namekey</span><span class="o">=</span><span class="s1">&#39;label&#39;</span><span class="p">,</span> <span class="n">idkey</span><span class="o">=</span><span class="s1">&#39;value&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">categories</span><span class="o">.</span><span class="n">find</span><span class="p">({})</span>
+        <span class="k">return</span> <span class="p">[{</span><span class="n">idkey</span><span class="p">:</span> <span class="n">category</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="p">[</span><span class="s1">&#39;categories&#39;</span><span class="p">]],</span> <span class="n">namekey</span><span class="p">:</span> <span class="n">category</span><span class="p">[</span><span class="s1">&#39;Name&#39;</span><span class="p">]}</span>
+                <span class="k">for</span> <span class="n">category</span> <span class="ow">in</span> <span class="n">result</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="DBHandler.getCustomers"><a class="viewcode-back" href="../../../api/Dashorder.db.html#Dashorder.db.dbhandler.DBHandler.getCustomers">[docs]</a>    <span class="k">def</span> <span class="nf">getCustomers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">namekey</span><span class="o">=</span><span class="s1">&#39;label&#39;</span><span class="p">,</span> <span class="n">idkey</span><span class="o">=</span><span class="s1">&#39;value&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+        <span class="c1"># TODO: Fetch customer names from billbee</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">customers</span><span class="o">.</span><span class="n">find</span><span class="p">({})</span>
+        <span class="k">return</span> <span class="p">[{</span><span class="n">idkey</span><span class="p">:</span> <span class="n">customer</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="p">[</span><span class="s1">&#39;customers&#39;</span><span class="p">]],</span> <span class="n">namekey</span><span class="p">:</span> <span class="n">customer</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="p">[</span><span class="s1">&#39;customers&#39;</span><span class="p">]]}</span>
+                <span class="k">for</span> <span class="n">customer</span> <span class="ow">in</span> <span class="n">result</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="DBHandler.getArticlesByIds"><a class="viewcode-back" href="../../../api/Dashorder.db.html#Dashorder.db.dbhandler.DBHandler.getArticlesByIds">[docs]</a>    <span class="k">def</span> <span class="nf">getArticlesByIds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">articles</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Get articles, optionally limiting them by a list of article ids</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="k">if</span> <span class="n">articles</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">articles</span><span class="o">.</span><span class="n">find</span><span class="p">({</span><span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="p">[</span><span class="s1">&#39;articles&#39;</span><span class="p">]:</span> <span class="p">{</span><span class="s1">&#39;$in&#39;</span><span class="p">:</span> <span class="n">articles</span><span class="p">}})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">articles</span><span class="o">.</span><span class="n">find</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">res</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="p">[</span><span class="s1">&#39;articles&#39;</span><span class="p">],</span> <span class="n">ASCENDING</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DBHandler.getShopsByIds"><a class="viewcode-back" href="../../../api/Dashorder.db.html#Dashorder.db.dbhandler.DBHandler.getShopsByIds">[docs]</a>    <span class="k">def</span> <span class="nf">getShopsByIds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shops</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Get shops, optionally limiting them by a list of shop ids</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="k">if</span> <span class="n">shops</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">sellers</span><span class="o">.</span><span class="n">find</span><span class="p">({</span><span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="p">[</span><span class="s1">&#39;sellers&#39;</span><span class="p">]:</span> <span class="p">{</span><span class="s1">&#39;$in&#39;</span><span class="p">:</span> <span class="n">shops</span><span class="p">}})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">sellers</span><span class="o">.</span><span class="n">find</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">res</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="p">[</span><span class="s1">&#39;sellers&#39;</span><span class="p">],</span> <span class="n">ASCENDING</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DBHandler.getTagsByIds"><a class="viewcode-back" href="../../../api/Dashorder.db.html#Dashorder.db.dbhandler.DBHandler.getTagsByIds">[docs]</a>    <span class="k">def</span> <span class="nf">getTagsByIds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tags</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Get tags, optionally limiting them by a list of tag ids</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">otags</span> <span class="o">=</span> <span class="p">[</span><span class="n">ObjectId</span><span class="p">(</span><span class="n">tag</span><span class="p">)</span> <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">otags</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">find</span><span class="p">({</span><span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="p">[</span><span class="s1">&#39;tags&#39;</span><span class="p">]:</span> <span class="p">{</span><span class="s1">&#39;$in&#39;</span><span class="p">:</span> <span class="n">otags</span><span class="p">}})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">find</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">res</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="p">[</span><span class="s1">&#39;tags&#39;</span><span class="p">],</span> <span class="n">ASCENDING</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DBHandler.getCategoriesByIds"><a class="viewcode-back" href="../../../api/Dashorder.db.html#Dashorder.db.dbhandler.DBHandler.getCategoriesByIds">[docs]</a>    <span class="k">def</span> <span class="nf">getCategoriesByIds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">categories</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Get categories, optionally limiting them by a list of category ids</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="k">if</span> <span class="n">categories</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">categories</span><span class="o">.</span><span class="n">find</span><span class="p">({</span><span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="p">[</span><span class="s1">&#39;categories&#39;</span><span class="p">]:</span> <span class="p">{</span><span class="s1">&#39;$in&#39;</span><span class="p">:</span> <span class="n">categories</span><span class="p">}})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">categories</span><span class="o">.</span><span class="n">find</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">res</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="p">[</span><span class="s1">&#39;categories&#39;</span><span class="p">],</span> <span class="n">ASCENDING</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DBHandler.getCustomersByIds"><a class="viewcode-back" href="../../../api/Dashorder.db.html#Dashorder.db.dbhandler.DBHandler.getCustomersByIds">[docs]</a>    <span class="k">def</span> <span class="nf">getCustomersByIds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">customers</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Get customers, optionally limiting them by a list of customer ids</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="c1"># TODO: Add names (billbee api)</span>
+
+        <span class="k">if</span> <span class="n">customers</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">customers</span><span class="o">.</span><span class="n">find</span><span class="p">({</span><span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="p">[</span><span class="s1">&#39;customers&#39;</span><span class="p">]:</span> <span class="p">{</span><span class="s1">&#39;$in&#39;</span><span class="p">:</span> <span class="n">customers</span><span class="p">}})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">customers</span><span class="o">.</span><span class="n">find</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">res</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="p">[</span><span class="s1">&#39;customers&#39;</span><span class="p">],</span> <span class="n">ASCENDING</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DBHandler.getOrdersByIds"><a class="viewcode-back" href="../../../api/Dashorder.db.html#Dashorder.db.dbhandler.DBHandler.getOrdersByIds">[docs]</a>    <span class="k">def</span> <span class="nf">getOrdersByIds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orders</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Get orders, optionally limiting them by a list of order ids</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="n">pipeline</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">orders</span><span class="p">:</span>
+            <span class="n">pipeline</span> <span class="o">+=</span> <span class="p">[</span>
+                <span class="p">{</span><span class="s1">&#39;$match&#39;</span><span class="p">:</span> <span class="p">{</span>  <span class="c1"># Remove orders containing invalid order ids</span>
+                    <span class="s1">&#39;$expr&#39;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s1">&#39;$in&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;$&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="p">[</span><span class="s1">&#39;orders&#39;</span><span class="p">]),</span> <span class="n">orders</span><span class="p">]</span>
+                     <span class="p">}</span>
+                   <span class="p">}</span>
+                 <span class="p">}</span>
+            <span class="p">]</span>
+
+        <span class="n">pipeline</span> <span class="o">+=</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s1">&#39;$unwind&#39;</span><span class="p">:</span> <span class="s1">&#39;$OrderItems&#39;</span><span class="p">},</span>
+            <span class="p">{</span><span class="s1">&#39;$sort&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;CreatedAt&#39;</span><span class="p">:</span> <span class="n">ASCENDING</span><span class="p">}}</span>
+        <span class="p">]</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">orders</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span><span class="n">pipeline</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">__ordersFilterHelper</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">articles</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">shops</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                             <span class="n">customers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># apply filters</span>
+        <span class="n">conditions</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="n">articles</span><span class="p">:</span>
+            <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;$in&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;$OrderItems.Product.BillbeeId&#39;</span><span class="p">,</span> <span class="n">articles</span><span class="p">]})</span>
+        <span class="k">if</span> <span class="n">shops</span><span class="p">:</span>
+            <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;$in&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;$BillbeeShopId&#39;</span><span class="p">,</span> <span class="n">shops</span><span class="p">]})</span>
+        <span class="k">if</span> <span class="n">customers</span><span class="p">:</span>
+            <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;$in&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;$Customer&#39;</span><span class="p">,</span> <span class="n">customers</span><span class="p">]})</span>
+
+        <span class="k">return</span> <span class="n">conditions</span>
+
+    <span class="k">def</span> <span class="nf">__ordersSortHelper</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sort</span><span class="p">):</span>
+        <span class="n">sort_order</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">code</span> <span class="ow">in</span> <span class="n">sort</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">code</span> <span class="o">==</span> <span class="s1">&#39;a&#39;</span><span class="p">:</span>
+                <span class="n">sort_order</span><span class="p">[</span><span class="s1">&#39;ArticleId&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ASCENDING</span>
+            <span class="k">elif</span> <span class="n">code</span> <span class="o">==</span> <span class="s1">&#39;s&#39;</span><span class="p">:</span>
+                <span class="n">sort_order</span><span class="p">[</span><span class="s1">&#39;ShopId&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ASCENDING</span>
+            <span class="k">elif</span> <span class="n">code</span> <span class="o">==</span> <span class="s1">&#39;c&#39;</span><span class="p">:</span>
+                <span class="n">sort_order</span><span class="p">[</span><span class="s1">&#39;CustomerId&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ASCENDING</span>
+            <span class="k">elif</span> <span class="n">code</span> <span class="o">==</span> <span class="s1">&#39;d&#39;</span><span class="p">:</span>
+                <span class="n">sort_order</span><span class="p">[</span><span class="s1">&#39;CreatedAt&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ASCENDING</span>
+            <span class="k">elif</span> <span class="n">code</span> <span class="o">==</span> <span class="s1">&#39;t&#39;</span><span class="p">:</span>
+                <span class="n">sort_order</span><span class="p">[</span><span class="s1">&#39;TagId&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ASCENDING</span>
+            <span class="k">elif</span> <span class="n">code</span> <span class="o">==</span> <span class="s1">&#39;cat&#39;</span><span class="p">:</span>
+                <span class="n">sort_order</span><span class="p">[</span><span class="s1">&#39;CategoryId&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ASCENDING</span>
+
+        <span class="k">return</span> <span class="n">sort_order</span>
+
+    <span class="c1"># TODO: Replace other functions by this one (namely getOrdersContaining Shops/Articles/Customers)</span>
+<div class="viewcode-block" id="DBHandler.getOrdersMultiFilter"><a class="viewcode-back" href="../../../api/Dashorder.db.html#Dashorder.db.dbhandler.DBHandler.getOrdersMultiFilter">[docs]</a>    <span class="k">def</span> <span class="nf">getOrdersMultiFilter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">articles</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">shops</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                             <span class="n">customers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">sort</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Get orders, limit them by multiple filters for articles, shops and customers.</span>
+<span class="sd">        sort can contain &#39;a&#39; for articles, &#39;s&#39; for shops and &#39;c&#39; for customers and</span>
+<span class="sd">        &#39;d&#39; for date in any order. The order of the elements in sort defines the sort order</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="n">pipeline</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s1">&#39;$unwind&#39;</span><span class="p">:</span> <span class="s1">&#39;$OrderItems&#39;</span><span class="p">}</span>
+        <span class="p">]</span>
+
+        <span class="c1"># apply filters</span>
+        <span class="n">conditions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__ordersFilterHelper</span><span class="p">(</span><span class="n">articles</span><span class="o">=</span><span class="n">articles</span><span class="p">,</span> <span class="n">shops</span><span class="o">=</span><span class="n">shops</span><span class="p">,</span> <span class="n">customers</span><span class="o">=</span><span class="n">customers</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">conditions</span><span class="p">:</span>
+            <span class="n">pipeline</span> <span class="o">+=</span> <span class="p">[</span>
+                <span class="p">{</span><span class="s1">&#39;$match&#39;</span><span class="p">:</span> <span class="p">{</span>  <span class="c1"># Remove orders containing invalid order ids</span>
+                    <span class="s1">&#39;$expr&#39;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s1">&#39;$and&#39;</span><span class="p">:</span> <span class="n">conditions</span>
+                     <span class="p">}</span>
+                   <span class="p">}</span>
+                 <span class="p">}</span>
+            <span class="p">]</span>
+
+        <span class="n">pipeline</span> <span class="o">+=</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s1">&#39;$addFields&#39;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s1">&#39;ArticleId&#39;</span><span class="p">:</span> <span class="s1">&#39;$OrderItems.Product.BillbeeId&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;CustomerId&#39;</span><span class="p">:</span> <span class="s1">&#39;$Customer&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;ShopId&#39;</span><span class="p">:</span> <span class="s1">&#39;$BillbeeShopId&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;Price&#39;</span><span class="p">:</span> <span class="s1">&#39;$OrderItems.TotalPrice&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;CreatedAt&#39;</span><span class="p">:</span> <span class="s1">&#39;$CreatedAt&#39;</span>
+                <span class="p">}</span>
+             <span class="p">},</span>
+            <span class="p">{</span><span class="s1">&#39;$project&#39;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s1">&#39;ArticleId&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="s1">&#39;CustomerId&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="s1">&#39;ShopId&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="s1">&#39;Price&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="s1">&#39;CreatedAt&#39;</span><span class="p">:</span> <span class="mi">1</span>
+                <span class="p">}</span>
+             <span class="p">}</span>
+        <span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">sort</span><span class="p">:</span>
+            <span class="n">sort_order</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__ordersSortHelper</span><span class="p">(</span><span class="n">sort</span><span class="p">)</span>
+            <span class="n">pipeline</span> <span class="o">+=</span> <span class="p">[{</span><span class="s1">&#39;$sort&#39;</span><span class="p">:</span> <span class="n">sort_order</span><span class="p">}]</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">orders</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span><span class="n">pipeline</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DBHandler.getOrdersContainingTags"><a class="viewcode-back" href="../../../api/Dashorder.db.html#Dashorder.db.dbhandler.DBHandler.getOrdersContainingTags">[docs]</a>    <span class="k">def</span> <span class="nf">getOrdersContainingTags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tags</span><span class="p">,</span> <span class="n">articles</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[],</span>
+                                <span class="n">shops</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                                <span class="n">customers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">sort</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;t&#39;</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">]):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Get orders, optionally limiting them by a list of tag ids</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="n">otags</span> <span class="o">=</span> <span class="p">[</span><span class="n">ObjectId</span><span class="p">(</span><span class="n">tag</span><span class="p">)</span> <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">]</span>
+        <span class="n">pipeline</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s1">&#39;$unwind&#39;</span><span class="p">:</span> <span class="s1">&#39;$OrderItems&#39;</span><span class="p">},</span>  <span class="c1"># Create a new order document for each sold product within an order</span>
+            <span class="p">{</span><span class="s1">&#39;$lookup&#39;</span><span class="p">:</span> <span class="p">{</span>  <span class="c1"># Join with articles</span>
+                <span class="s1">&#39;from&#39;</span><span class="p">:</span> <span class="s1">&#39;articles&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;localField&#39;</span><span class="p">:</span> <span class="s1">&#39;OrderItems.Product.BillbeeId&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;foreignField&#39;</span><span class="p">:</span> <span class="s1">&#39;Id&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;as&#39;</span><span class="p">:</span> <span class="s1">&#39;articles&#39;</span>
+                <span class="p">}</span>
+             <span class="p">}</span>
+        <span class="p">]</span>
+
+        <span class="c1"># apply filters</span>
+        <span class="n">conditions</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="n">otags</span><span class="p">:</span>
+            <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;$anyElementTrue&#39;</span><span class="p">:</span> <span class="p">[{</span><span class="s1">&#39;$setIntersection&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;$$article.Tags&#39;</span><span class="p">,</span> <span class="n">otags</span><span class="p">]}]})</span>
+
+        <span class="n">conditions</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__ordersFilterHelper</span><span class="p">(</span><span class="n">articles</span><span class="o">=</span><span class="n">articles</span><span class="p">,</span> <span class="n">shops</span><span class="o">=</span><span class="n">shops</span><span class="p">,</span> <span class="n">customers</span><span class="o">=</span><span class="n">customers</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">conditions</span><span class="p">:</span>
+            <span class="n">pipeline</span> <span class="o">+=</span> <span class="p">[{</span><span class="s1">&#39;$project&#39;</span><span class="p">:</span> <span class="p">{</span>  <span class="c1"># Remove articles not containing the relevant tags</span>
+                 <span class="s1">&#39;articles&#39;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s1">&#39;$filter&#39;</span><span class="p">:</span> <span class="p">{</span>
+                       <span class="s1">&#39;input&#39;</span><span class="p">:</span> <span class="s1">&#39;$articles&#39;</span><span class="p">,</span>
+                       <span class="s1">&#39;as&#39;</span><span class="p">:</span> <span class="s1">&#39;article&#39;</span><span class="p">,</span>
+                       <span class="s1">&#39;cond&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;$and&#39;</span><span class="p">:</span> <span class="n">conditions</span><span class="p">}</span>
+                    <span class="p">}</span>
+                 <span class="p">},</span>
+                 <span class="s1">&#39;CreatedAt&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                 <span class="s1">&#39;OrderItems.TotalPrice&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                 <span class="s1">&#39;OrderItems.Product.BillbeeId&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                 <span class="s1">&#39;Customer&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                 <span class="s1">&#39;BillbeeShopId&#39;</span><span class="p">:</span> <span class="mi">1</span>
+              <span class="p">}</span>
+             <span class="p">}]</span>
+
+        <span class="n">pipeline</span> <span class="o">+=</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s1">&#39;$unwind&#39;</span><span class="p">:</span> <span class="s1">&#39;$articles&#39;</span><span class="p">},</span>  <span class="c1"># Create document for each article</span>
+            <span class="p">{</span><span class="s1">&#39;$addFields&#39;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s1">&#39;CreatedAt&#39;</span><span class="p">:</span> <span class="s1">&#39;$CreatedAt&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;Price&#39;</span><span class="p">:</span> <span class="s1">&#39;$OrderItems.TotalPrice&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;TagId&#39;</span><span class="p">:</span> <span class="s1">&#39;$articles.Tags&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;ArticleId&#39;</span><span class="p">:</span> <span class="s1">&#39;$OrderItems.Product.BillbeeId&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;CustomerId&#39;</span><span class="p">:</span> <span class="s1">&#39;$Customer&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;ShopId&#39;</span><span class="p">:</span> <span class="s1">&#39;$BillbeeShopId&#39;</span>
+                <span class="p">}</span>
+             <span class="p">},</span>
+            <span class="p">{</span><span class="s1">&#39;$unwind&#39;</span><span class="p">:</span> <span class="s1">&#39;$TagId&#39;</span><span class="p">},</span>  <span class="c1"># Create document for each tag</span>
+        <span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">otags</span><span class="p">:</span>
+            <span class="n">pipeline</span> <span class="o">+=</span> <span class="p">[</span>
+                <span class="p">{</span><span class="s1">&#39;$match&#39;</span><span class="p">:</span> <span class="p">{</span>  <span class="c1"># Remove orders containing invalid tags</span>
+                    <span class="s1">&#39;$expr&#39;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s1">&#39;$in&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;$TagId&#39;</span><span class="p">,</span> <span class="n">otags</span><span class="p">]</span>
+                     <span class="p">}</span>
+                   <span class="p">}</span>
+                 <span class="p">}</span>
+            <span class="p">]</span>
+
+        <span class="n">pipeline</span> <span class="o">+=</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s1">&#39;$project&#39;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s1">&#39;ArticleId&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="s1">&#39;CustomerId&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="s1">&#39;ShopId&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="s1">&#39;Price&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="s1">&#39;CreatedAt&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="s1">&#39;TagId&#39;</span><span class="p">:</span> <span class="mi">1</span>
+                <span class="p">}</span>
+             <span class="p">}</span>
+        <span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">sort</span><span class="p">:</span>
+            <span class="n">sort_order</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__ordersSortHelper</span><span class="p">(</span><span class="n">sort</span><span class="p">)</span>
+            <span class="n">pipeline</span> <span class="o">+=</span> <span class="p">[{</span><span class="s1">&#39;$sort&#39;</span><span class="p">:</span> <span class="n">sort_order</span><span class="p">}]</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">orders</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span><span class="n">pipeline</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DBHandler.getOrdersContainingCategories"><a class="viewcode-back" href="../../../api/Dashorder.db.html#Dashorder.db.dbhandler.DBHandler.getOrdersContainingCategories">[docs]</a>    <span class="k">def</span> <span class="nf">getOrdersContainingCategories</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">categories</span><span class="p">,</span> <span class="n">articles</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[],</span>
+                                      <span class="n">shops</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                                      <span class="n">customers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">sort</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;cat&#39;</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">]):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Get orders, optionally limiting them by a list of category ids</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="n">pipeline</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s1">&#39;$unwind&#39;</span><span class="p">:</span> <span class="s1">&#39;$OrderItems&#39;</span><span class="p">},</span>  <span class="c1"># Create a new order document for each sold product within an order</span>
+            <span class="p">{</span><span class="s1">&#39;$lookup&#39;</span><span class="p">:</span> <span class="p">{</span>  <span class="c1"># Join with articles</span>
+                <span class="s1">&#39;from&#39;</span><span class="p">:</span> <span class="s1">&#39;articles&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;localField&#39;</span><span class="p">:</span> <span class="s1">&#39;OrderItems.Product.BillbeeId&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;foreignField&#39;</span><span class="p">:</span> <span class="s1">&#39;Id&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;as&#39;</span><span class="p">:</span> <span class="s1">&#39;articles&#39;</span>
+                <span class="p">}</span>
+             <span class="p">}</span>
+        <span class="p">]</span>
+
+        <span class="n">conditions</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="n">categories</span><span class="p">:</span>
+            <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;$anyElementTrue&#39;</span><span class="p">:</span> <span class="p">[{</span><span class="s1">&#39;$setIntersection&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;$$article.Categories&#39;</span><span class="p">,</span> <span class="n">categories</span><span class="p">]}]})</span>
+
+        <span class="n">conditions</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__ordersFilterHelper</span><span class="p">(</span><span class="n">articles</span><span class="o">=</span><span class="n">articles</span><span class="p">,</span> <span class="n">shops</span><span class="o">=</span><span class="n">shops</span><span class="p">,</span> <span class="n">customers</span><span class="o">=</span><span class="n">customers</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">conditions</span><span class="p">:</span>
+            <span class="n">pipeline</span> <span class="o">+=</span> <span class="p">[{</span><span class="s1">&#39;$project&#39;</span><span class="p">:</span> <span class="p">{</span>  <span class="c1"># Remove articles not containing the relevant categories</span>
+                 <span class="s1">&#39;articles&#39;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s1">&#39;$filter&#39;</span><span class="p">:</span> <span class="p">{</span>
+                       <span class="s1">&#39;input&#39;</span><span class="p">:</span> <span class="s1">&#39;$articles&#39;</span><span class="p">,</span>
+                       <span class="s1">&#39;as&#39;</span><span class="p">:</span> <span class="s1">&#39;article&#39;</span><span class="p">,</span>
+                       <span class="s1">&#39;cond&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;$and&#39;</span><span class="p">:</span> <span class="n">conditions</span><span class="p">}</span>
+                    <span class="p">}</span>
+                 <span class="p">},</span>
+                 <span class="s1">&#39;CreatedAt&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                 <span class="s1">&#39;OrderItems.TotalPrice&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                 <span class="s1">&#39;OrderItems.Product.BillbeeId&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                 <span class="s1">&#39;Customer&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                 <span class="s1">&#39;BillbeeShopId&#39;</span><span class="p">:</span> <span class="mi">1</span>
+              <span class="p">}</span>
+             <span class="p">}]</span>
+
+        <span class="n">pipeline</span> <span class="o">+=</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s1">&#39;$unwind&#39;</span><span class="p">:</span> <span class="s1">&#39;$articles&#39;</span><span class="p">},</span>  <span class="c1"># Create document for each article</span>
+            <span class="p">{</span><span class="s1">&#39;$addFields&#39;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s1">&#39;CreatedAt&#39;</span><span class="p">:</span> <span class="s1">&#39;$CreatedAt&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;Price&#39;</span><span class="p">:</span> <span class="s1">&#39;$OrderItems.TotalPrice&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;CategoryId&#39;</span><span class="p">:</span> <span class="s1">&#39;$articles.Categories&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;ArticleId&#39;</span><span class="p">:</span> <span class="s1">&#39;$OrderItems.Product.BillbeeId&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;CustomerId&#39;</span><span class="p">:</span> <span class="s1">&#39;$Customer&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;ShopId&#39;</span><span class="p">:</span> <span class="s1">&#39;$BillbeeShopId&#39;</span>
+                <span class="p">}</span>
+             <span class="p">},</span>
+            <span class="p">{</span><span class="s1">&#39;$unwind&#39;</span><span class="p">:</span> <span class="s1">&#39;$CategoryId&#39;</span><span class="p">},</span>  <span class="c1"># Create document for each category</span>
+        <span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">categories</span><span class="p">:</span>
+            <span class="n">pipeline</span> <span class="o">+=</span> <span class="p">[</span>
+                <span class="p">{</span><span class="s1">&#39;$match&#39;</span><span class="p">:</span> <span class="p">{</span>  <span class="c1"># Remove orders containing invalid categories</span>
+                    <span class="s1">&#39;$expr&#39;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s1">&#39;$in&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;$CategoryId&#39;</span><span class="p">,</span> <span class="n">categories</span><span class="p">]</span>
+                     <span class="p">}</span>
+                   <span class="p">}</span>
+                 <span class="p">}</span>
+            <span class="p">]</span>
+
+        <span class="n">pipeline</span> <span class="o">+=</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s1">&#39;$project&#39;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s1">&#39;ArticleId&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="s1">&#39;CustomerId&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="s1">&#39;ShopId&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="s1">&#39;Price&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="s1">&#39;CreatedAt&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="s1">&#39;CategoryId&#39;</span><span class="p">:</span> <span class="mi">1</span>
+                <span class="p">}</span>
+             <span class="p">}</span>
+        <span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">sort</span><span class="p">:</span>
+            <span class="n">sort_order</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__ordersSortHelper</span><span class="p">(</span><span class="n">sort</span><span class="p">)</span>
+            <span class="n">pipeline</span> <span class="o">+=</span> <span class="p">[{</span><span class="s1">&#39;$sort&#39;</span><span class="p">:</span> <span class="n">sort_order</span><span class="p">}]</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">orders</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span><span class="n">pipeline</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DBHandler.getOrdersContainingZips"><a class="viewcode-back" href="../../../api/Dashorder.db.html#Dashorder.db.dbhandler.DBHandler.getOrdersContainingZips">[docs]</a>    <span class="k">def</span> <span class="nf">getOrdersContainingZips</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">zips</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;c&#39;</span><span class="p">]):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Get orders, optionally limiting them by a list of zip codes.</span>
+<span class="sd">        The elements in zips are regarded as the first letters a zip code must contain.</span>
+<span class="sd">        sort can contain &#39;a&#39; for articles, &#39;s&#39; for shops and &#39;z&#39; for zips and</span>
+<span class="sd">        &#39;d&#39; for date in any order. The order of the elements in sort defines the sort order</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="c1"># Make valid regex expression</span>
+        <span class="n">zips</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;^&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">zip</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;.*|&#39;</span> <span class="k">for</span> <span class="nb">zip</span> <span class="ow">in</span> <span class="n">zips</span><span class="p">]</span>
+        <span class="n">zips</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">zips</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">pipeline</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s1">&#39;$unwind&#39;</span><span class="p">:</span> <span class="s1">&#39;$OrderItems&#39;</span><span class="p">},</span>  <span class="c1"># Create a new order document for each sold product within an order</span>
+            <span class="p">{</span><span class="s1">&#39;$lookup&#39;</span><span class="p">:</span> <span class="p">{</span>  <span class="c1"># Join with customers</span>
+                <span class="s1">&#39;from&#39;</span><span class="p">:</span> <span class="s1">&#39;customers&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;localField&#39;</span><span class="p">:</span> <span class="s1">&#39;Customer&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;foreignField&#39;</span><span class="p">:</span> <span class="s1">&#39;Id&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;as&#39;</span><span class="p">:</span> <span class="s1">&#39;customers&#39;</span>
+                <span class="p">}</span>
+             <span class="p">}</span>
+        <span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">zips</span><span class="p">:</span>
+            <span class="n">pipeline</span> <span class="o">+=</span> <span class="p">[</span>
+                <span class="p">{</span><span class="s1">&#39;$match&#39;</span><span class="p">:</span> <span class="p">{</span>  <span class="c1"># Remove orders containing invalid categories</span>
+                    <span class="s1">&#39;customers.Zip&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;$regex&#39;</span><span class="p">:</span> <span class="n">zips</span><span class="p">}</span>
+                   <span class="p">}</span>
+                 <span class="p">}</span>
+            <span class="p">]</span>
+
+        <span class="n">pipeline</span> <span class="o">+=</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s1">&#39;$unwind&#39;</span><span class="p">:</span> <span class="s1">&#39;$customers&#39;</span><span class="p">},</span>  <span class="c1"># Create document for each customer</span>
+            <span class="p">{</span><span class="s1">&#39;$addFields&#39;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s1">&#39;ArticleId&#39;</span><span class="p">:</span> <span class="s1">&#39;$OrderItems.Product.BillbeeId&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;Price&#39;</span><span class="p">:</span> <span class="s1">&#39;$OrderItems.TotalPrice&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;Zip&#39;</span><span class="p">:</span> <span class="s1">&#39;$customers.Zip&#39;</span>
+                <span class="p">}</span>
+             <span class="p">},</span>
+            <span class="p">{</span><span class="s1">&#39;$project&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;ArticleId&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="s1">&#39;CreatedAt&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="s1">&#39;Price&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="s1">&#39;Zip&#39;</span><span class="p">:</span> <span class="mi">1</span>
+                <span class="p">}</span>
+             <span class="p">}</span>
+        <span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">sort</span><span class="p">:</span>
+            <span class="n">sort_order</span> <span class="o">=</span> <span class="p">{}</span>
+
+            <span class="k">for</span> <span class="n">code</span> <span class="ow">in</span> <span class="n">sort</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">code</span> <span class="o">==</span> <span class="s1">&#39;a&#39;</span><span class="p">:</span>
+                    <span class="n">sort_order</span><span class="p">[</span><span class="s1">&#39;ArticleId&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ASCENDING</span>
+                <span class="k">elif</span> <span class="n">code</span> <span class="o">==</span> <span class="s1">&#39;z&#39;</span><span class="p">:</span>
+                    <span class="n">sort_order</span><span class="p">[</span><span class="s1">&#39;Zip&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ASCENDING</span>
+                <span class="k">elif</span> <span class="n">code</span> <span class="o">==</span> <span class="s1">&#39;d&#39;</span><span class="p">:</span>
+                    <span class="n">sort_order</span><span class="p">[</span><span class="s1">&#39;CreatedAt&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ASCENDING</span>
+
+            <span class="n">pipeline</span> <span class="o">+=</span> <span class="p">[{</span><span class="s1">&#39;$sort&#39;</span><span class="p">:</span> <span class="n">sort_order</span><span class="p">}]</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">orders</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span><span class="n">pipeline</span><span class="p">)</span></div>
+
+    <span class="c1"># TODO: Replace all $redact stages with $match stage</span>
+<div class="viewcode-block" id="DBHandler.getOrdersContainingArticles"><a class="viewcode-back" href="../../../api/Dashorder.db.html#Dashorder.db.dbhandler.DBHandler.getOrdersContainingArticles">[docs]</a>    <span class="k">def</span> <span class="nf">getOrdersContainingArticles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">articles</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Get orders, optionally limiting them by a list of article ids</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="n">pipeline</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s1">&#39;$unwind&#39;</span><span class="p">:</span> <span class="s1">&#39;$OrderItems&#39;</span><span class="p">}</span>
+        <span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">articles</span><span class="p">:</span>
+            <span class="n">pipeline</span> <span class="o">+=</span> <span class="p">[</span>
+                <span class="p">{</span><span class="s1">&#39;$redact&#39;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s1">&#39;$cond&#39;</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="s1">&#39;if&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;$in&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;$OrderItems.Product.BillbeeId&#39;</span><span class="p">,</span> <span class="n">articles</span><span class="p">]},</span>
+                            <span class="s1">&#39;then&#39;</span><span class="p">:</span> <span class="s1">&#39;$$KEEP&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;else&#39;</span><span class="p">:</span> <span class="s1">&#39;$$PRUNE&#39;</span>
+                        <span class="p">}</span>
+                    <span class="p">}</span>
+                 <span class="p">}</span>
+            <span class="p">]</span>
+
+        <span class="n">pipeline</span> <span class="o">+=</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s1">&#39;$addFields&#39;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s1">&#39;ArticleId&#39;</span><span class="p">:</span> <span class="s1">&#39;$OrderItems.Product.BillbeeId&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;Price&#39;</span><span class="p">:</span> <span class="s1">&#39;$OrderItems.TotalPrice&#39;</span>
+                <span class="p">}</span>
+             <span class="p">},</span>
+            <span class="p">{</span><span class="s1">&#39;$project&#39;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s1">&#39;CreatedAt&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="s1">&#39;ArticleId&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="s1">&#39;Price&#39;</span><span class="p">:</span> <span class="mi">1</span>
+                <span class="p">}</span>
+             <span class="p">},</span>
+            <span class="p">{</span><span class="s1">&#39;$sort&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;ArticleId&#39;</span><span class="p">:</span> <span class="n">ASCENDING</span><span class="p">,</span> <span class="s1">&#39;CreatedAt&#39;</span><span class="p">:</span> <span class="n">ASCENDING</span><span class="p">}}</span>
+        <span class="p">]</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">orders</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span><span class="n">pipeline</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DBHandler.getOrdersContainingShops"><a class="viewcode-back" href="../../../api/Dashorder.db.html#Dashorder.db.dbhandler.DBHandler.getOrdersContainingShops">[docs]</a>    <span class="k">def</span> <span class="nf">getOrdersContainingShops</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shops</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Get orders, optionally limiting them by a list of shop ids</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="n">pipeline</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s1">&#39;$unwind&#39;</span><span class="p">:</span> <span class="s1">&#39;$OrderItems&#39;</span><span class="p">}</span>
+        <span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">shops</span><span class="p">:</span>
+            <span class="n">pipeline</span> <span class="o">+=</span> <span class="p">[</span>
+                <span class="p">{</span><span class="s1">&#39;$redact&#39;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s1">&#39;$cond&#39;</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="s1">&#39;if&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;$in&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;$BillbeeShopId&#39;</span><span class="p">,</span> <span class="n">shops</span><span class="p">]},</span>
+                            <span class="s1">&#39;then&#39;</span><span class="p">:</span> <span class="s1">&#39;$$KEEP&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;else&#39;</span><span class="p">:</span> <span class="s1">&#39;$$PRUNE&#39;</span>
+                        <span class="p">}</span>
+                    <span class="p">}</span>
+                 <span class="p">}</span>
+            <span class="p">]</span>
+
+        <span class="n">pipeline</span> <span class="o">+=</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s1">&#39;$addFields&#39;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s1">&#39;ShopId&#39;</span><span class="p">:</span> <span class="s1">&#39;$BillbeeShopId&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;Price&#39;</span><span class="p">:</span> <span class="s1">&#39;$OrderItems.TotalPrice&#39;</span><span class="p">,</span>
+                <span class="p">}</span>
+             <span class="p">},</span>
+            <span class="p">{</span><span class="s1">&#39;$project&#39;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s1">&#39;CreatedAt&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="s1">&#39;ShopId&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="s1">&#39;Price&#39;</span><span class="p">:</span> <span class="mi">1</span>
+                <span class="p">}</span>
+             <span class="p">},</span>
+            <span class="p">{</span><span class="s1">&#39;$sort&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;ShopId&#39;</span><span class="p">:</span> <span class="n">ASCENDING</span><span class="p">,</span> <span class="s1">&#39;CreatedAt&#39;</span><span class="p">:</span> <span class="n">ASCENDING</span><span class="p">}}</span>
+        <span class="p">]</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">orders</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span><span class="n">pipeline</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DBHandler.getOrdersContainingCustomers"><a class="viewcode-back" href="../../../api/Dashorder.db.html#Dashorder.db.dbhandler.DBHandler.getOrdersContainingCustomers">[docs]</a>    <span class="k">def</span> <span class="nf">getOrdersContainingCustomers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">customers</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Get orders, optionally limiting them by a list of customer ids</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="n">pipeline</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s1">&#39;$unwind&#39;</span><span class="p">:</span> <span class="s1">&#39;$OrderItems&#39;</span><span class="p">}</span>
+        <span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">customers</span><span class="p">:</span>
+            <span class="n">pipeline</span> <span class="o">+=</span> <span class="p">[</span>
+                <span class="p">{</span><span class="s1">&#39;$redact&#39;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s1">&#39;$cond&#39;</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="s1">&#39;if&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;$in&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;$Customer&#39;</span><span class="p">,</span> <span class="n">customers</span><span class="p">]},</span>
+                            <span class="s1">&#39;then&#39;</span><span class="p">:</span> <span class="s1">&#39;$$KEEP&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;else&#39;</span><span class="p">:</span> <span class="s1">&#39;$$PRUNE&#39;</span>
+                        <span class="p">}</span>
+                    <span class="p">}</span>
+                 <span class="p">}</span>
+            <span class="p">]</span>
+
+        <span class="n">pipeline</span> <span class="o">+=</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s1">&#39;$addFields&#39;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s1">&#39;CustomerId&#39;</span><span class="p">:</span> <span class="s1">&#39;$Customer&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;Price&#39;</span><span class="p">:</span> <span class="s1">&#39;$OrderItems.TotalPrice&#39;</span><span class="p">,</span>
+                <span class="p">}</span>
+             <span class="p">},</span>
+            <span class="p">{</span><span class="s1">&#39;$project&#39;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s1">&#39;CreatedAt&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="s1">&#39;CustomerId&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="s1">&#39;Price&#39;</span><span class="p">:</span> <span class="mi">1</span>
+                <span class="p">}</span>
+             <span class="p">},</span>
+            <span class="p">{</span><span class="s1">&#39;$sort&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;CustomerId&#39;</span><span class="p">:</span> <span class="n">ASCENDING</span><span class="p">,</span> <span class="s1">&#39;CreatedAt&#39;</span><span class="p">:</span> <span class="n">ASCENDING</span><span class="p">}}</span>
+        <span class="p">]</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">orders</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span><span class="n">pipeline</span><span class="p">)</span></div></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s1">&#39;DBHandler.log&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">,</span>
+                        <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;[</span><span class="si">%(name)s</span><span class="s1">] </span><span class="si">%(asctime)s</span><span class="s1"> - </span><span class="si">%(levelname)s</span><span class="s1"> - </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">dbhandler</span> <span class="o">=</span> <span class="n">DBHandler</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s1">&#39;Hello&#39;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s1">&#39;World&#39;</span><span class="p">,</span> <span class="n">dbname</span><span class="o">=</span><span class="s1">&#39;maldaner&#39;</span><span class="p">)</span>
+
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    from ..billbee.bbhandler import BbHandler</span>
+<span class="sd">    bbhandler = BbHandler()</span>
+<span class="sd">    dbhandler.updateCustomers(bbhandler.get_customers())</span>
+<span class="sd">    dbhandler.updateArticles(bbhandler.get_articles())</span>
+<span class="sd">    dbhandler.updateOrders(bbhandler.get_orders())</span>
+<span class="sd">    print(&#39;Latest article ID: &#39; + str(dbhandler.getLatestArticleId()))</span>
+<span class="sd">    print(&#39;Latest customer ID: &#39; + str(dbhandler.getLatestCustomerId()))</span>
+<span class="sd">    print(&#39;Latest order ID: &#39; + str(dbhandler.getLatestOrderId()))</span>
+
+<span class="sd">    print(dbhandler.getArticles())</span>
+<span class="sd">    print(dbhandler.getShops())</span>
+<span class="sd">    print(dbhandler.getTags())</span>
+<span class="sd">    print(dbhandler.getCategories())</span>
+<span class="sd">    print(dbhandler.getCustomers())</span>
+
+<span class="sd">    print(list(dbhandler.getOrdersContainingArticles([15658439])))</span>
+<span class="sd">    print(list(dbhandler.getArticlesByIds([15658439, 15658452])))</span>
+<span class="sd">    print(list(dbhandler.getShopsByIds([62300, 62301])))</span>
+
+<span class="sd">    for item in list(dbhandler.getArticlesByIds([])):</span>
+<span class="sd">        print(&#39;\n&#39; + str(item) + &#39;\n&#39;)</span>
+
+<span class="sd">    print(list(dbhandler.getOrdersContainingTags([</span>
+<span class="sd">                &#39;5d7279ecadba0131dbca1384&#39;,</span>
+<span class="sd">                &#39;5d763cb90c8966ed81846113&#39;</span>
+<span class="sd">                ]</span>
+<span class="sd">            )</span>
+<span class="sd">        )</span>
+<span class="sd">    )</span>
+
+<span class="sd">    res = dbhandler.getTagsByIds([&#39;5d7279ecadba0131dbca1384&#39;, &#39;5d763cb90c8966ed81846113&#39;])</span>
+<span class="sd">    print(list(res))</span>
+
+<span class="sd">    print(list(dbhandler.getOrdersContainingCategories([29048])))</span>
+<span class="sd">    print(list(dbhandler.getCategoriesByIds([29048])))</span>
+
+<span class="sd">    print(list(dbhandler.getOrdersContainingZips([&#39;3&#39;, &#39;58&#39;])))</span>
+
+<span class="sd">    print(list(dbhandler.getOrdersContainingShops([62168, 62300])))</span>
+<span class="sd">    # print(list(dbhandler.getOrdersContainingShops([62168])))</span>
+<span class="sd">    print(list(dbhandler.getShopsByIds([62168, 62300])))</span>
+
+<span class="sd">    print(list(dbhandler.getOrdersByIds([72797095, 72797017])))</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">dbhandler</span><span class="o">.</span><span class="n">getOrdersMultiFilter</span><span class="p">(</span><span class="n">articles</span><span class="o">=</span><span class="p">[</span><span class="mi">15677213</span><span class="p">],</span> <span class="n">customers</span><span class="o">=</span><span class="p">[</span><span class="mi">60866626</span><span class="p">],</span> <span class="n">sort</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;d&#39;</span><span class="p">,</span> <span class="s1">&#39;s&#39;</span><span class="p">])))</span>
+</pre></div>
+
+           </div>
+
+          </div>
+          <footer>
+
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Harald Heckmann, Thorsten Knoll
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+
+
+
+
+
+</body>
+</html>
