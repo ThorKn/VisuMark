@@ -94,7 +94,11 @@ def Add_Dash(server) -> None:
                                     dcc.Graph(
                                         id='graph_display',
                                         figure={
-                                            'data': cfg_graph.graph_data,
+                                            # 'data': cfg_graph.graph_data,
+                                            'data': [
+                                                        {'x': [1,8,16,32,64,1536,32768], 'y': [1798,271,162,108,80.2,54.1,53.1], 'type': 'line', 'name': 'ASCON-128 RV64'},
+                                                        {'x': [1,8,16,32,64,1536,32768], 'y': [1812,225,147,93,64.6,38.2,37.2], 'type': 'line', 'name': 'ASCON-128A RV64'},
+                                                    ],
                                             'layout': {
                                                 'modebar': {'orientation': 'v'},
                                                 'legend': {'orientation': 'h',
