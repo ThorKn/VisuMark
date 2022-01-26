@@ -34,7 +34,10 @@ on the data and the menu-settings. The graph can be modified interactive and dow
 from flask import Flask
 from flask_bootstrap import Bootstrap
 
+from webapp.config import Config_Graph
+
 bootstrap = Bootstrap()
+cfg_graph = Config_Graph()
 
 def create_app():
     """Create the flask website application.
@@ -55,8 +58,15 @@ def create_app():
 
     bootstrap.init_app(app)
 
+    # Import Dash application
+    from webapp.dash import dashexample  # isort:skip
+    app = dashexample.Add_Dash(app)
+
     # Import Flask blueprints
     from webapp.main import bp as main_bp  # isort:skip
     app.register_blueprint(main_bp)
+
+    from webapp.dash import bp as dash_bp  # isort:skip
+    app.register_blueprint(dash_bp)
 
     return app
